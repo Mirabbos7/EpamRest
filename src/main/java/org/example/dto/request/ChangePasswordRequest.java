@@ -1,15 +1,16 @@
 package org.example.dto.request;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 public record ChangePasswordRequest(
-        @NotNull
+        @NotBlank
         String username,
 
-        @NotNull
+        @NotBlank
         String oldPassword,
 
-        @NotNull
+        @NotBlank
         String newPassword
 ) {
 }

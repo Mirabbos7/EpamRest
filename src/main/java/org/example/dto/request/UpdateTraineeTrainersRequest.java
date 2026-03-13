@@ -1,14 +1,13 @@
 package org.example.dto.request;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
 
 public record UpdateTraineeTrainersRequest(
-        @NotNull
+        @NotBlank(message = "Username is required")
         String username,
-        @NotNull
-        String password,
 
-        @NotNull
+        @NotEmpty(message = "Trainers list must not be empty")
         List<String> trainerUsernames
 ) {}

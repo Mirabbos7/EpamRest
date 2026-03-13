@@ -45,14 +45,14 @@ public class TrainingServiceImpl implements TrainingService {
 
         trainingRepository.save(training);
 
-        return trainingMapper.toResponse(training);
+        return trainingMapper.toTraineeTrainingResponse(training);
     }
 
     @Override
     public Optional<TrainingResponse> select(Long id) {
 
         return trainingRepository.findById(id)
-                .map(trainingMapper::toResponse);
+                .map(trainingMapper::toTraineeTrainingResponse);
     }
 
     @Override
@@ -65,7 +65,7 @@ public class TrainingServiceImpl implements TrainingService {
         return trainingRepository.findAll()
                 .stream()
                 .filter(t -> t.getTrainee().getUser().getUsername().equals(traineeUsername))
-                .map(trainingMapper::toResponse)
+                .map(trainingMapper::toTraineeTrainingResponse)
                 .toList();
     }
 
@@ -78,7 +78,7 @@ public class TrainingServiceImpl implements TrainingService {
         return trainingRepository.findAll()
                 .stream()
                 .filter(t -> t.getTrainer().getUser().getUsername().equals(trainerUsername))
-                .map(trainingMapper::toResponse)
+                .map(trainingMapper::toTraineeTrainingResponse)
                 .toList();
     }
 
@@ -88,7 +88,7 @@ public class TrainingServiceImpl implements TrainingService {
         return trainingRepository.findAll()
                 .stream()
                 .filter(t -> traineeIds.contains(t.getTrainee().getId()))
-                .map(trainingMapper::toResponse)
+                .map(trainingMapper::toTraineeTrainingResponse)
                 .toList();
     }
 }

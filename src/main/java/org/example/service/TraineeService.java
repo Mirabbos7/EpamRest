@@ -14,15 +14,15 @@ public interface TraineeService {
 
     boolean matchUsernameAndPassword(String username, String password);
 
-    Optional<TraineeResponse> findByUsername(UserLoginDtoRequest request);
+    Optional<TraineeResponse> findByUsername(String username, String password);
 
     void changePassword(ChangePasswordRequest request);
 
-    TraineeResponse update(UpdateTraineeRequest request);
+    TraineeResponse update(String username, String password, UpdateTraineeRequest request);
 
     void setActive(String username, String password, boolean active);
 
-    void delete(UserLoginDtoRequest request);
+    void delete(String username, String password);
 
     List<TrainingResponse> getTrainings(String username,
                                         String password,
@@ -31,7 +31,8 @@ public interface TraineeService {
                                         String trainerName,
                                         TrainingType.TrainingTypeName trainingTypeName);
 
-    List<TrainerShortResponse> getUnassignedTrainers(UserLoginDtoRequest request);
+    List<TrainerShortResponse> getUnassignedTrainers(String username, String password);
 
-    TraineeResponse updateTrainers(UpdateTraineeTrainersRequest request);
+    TraineeResponse updateTrainers(String username, String password,
+                                   UpdateTraineeTrainersRequest request);
 }

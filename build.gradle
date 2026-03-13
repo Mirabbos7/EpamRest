@@ -25,33 +25,29 @@ configurations {
 }
 
 dependencies {
-    // Spring Boot starters
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 
-    // PostgreSQL driver
     runtimeOnly 'org.postgresql:postgresql:42.7.10'
 
-    // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    // MapStruct
     implementation 'org.mapstruct:mapstruct:1.6.3'
-// Source: https://mvnrepository.com/artifact/org.mapstruct/mapstruct-processor
     implementation group: 'org.mapstruct', name: 'mapstruct-processor', version: '1.6.3'
-    // Validation API
     implementation 'javax.validation:validation-api:2.0.1.Final'
 
-    // Swagger annotations
+    implementation group: 'jakarta.validation', name: 'jakarta.validation-api', version: '3.1.1'
+    implementation group: 'io.swagger', name: 'swagger-annotations', version: '1.6.16'
+    implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '3.0.2'
     implementation 'io.swagger:swagger-annotations:1.6.16'
 
-    // Testing
     testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-hateoas-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
 }
 
 tasks.named('test') {

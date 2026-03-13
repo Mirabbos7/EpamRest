@@ -22,9 +22,6 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public User createUser(String firstName, String lastName) {
-        validateNotBlank(firstName, "First name");
-        validateNotBlank(lastName, "Last name");
-
         String username = usernameGenerator.generateUsername(
                 firstName, lastName,
                 u -> userRepository.findByUsername(u).isPresent()
@@ -40,11 +37,5 @@ public class UserServiceImpl implements UserService {
 
         log.info("Creating user with username: {}", username);
         return userRepository.save(user);
-    }
-
-    private void validateNotBlank(String value, String fieldName) {
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException(fieldName + " is required");
-        }
     }
 }

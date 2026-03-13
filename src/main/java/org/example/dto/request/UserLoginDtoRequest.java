@@ -1,6 +1,6 @@
 package org.example.dto.request;
 
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.NotBlank;
 
-public record UserLoginDtoRequest(@NotNull String username, @NotNull String password) {
+public record UserLoginDtoRequest(@NotBlank String username, @NotBlank String password) {
 }

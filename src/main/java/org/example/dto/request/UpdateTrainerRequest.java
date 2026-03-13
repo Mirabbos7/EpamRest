@@ -1,14 +1,19 @@
 package org.example.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.example.entity.TrainingType;
 
-import javax.validation.constraints.NotNull;
-
 public record UpdateTrainerRequest(
-        @NotNull
+        @NotBlank
         String username,
-        @NotNull
-        String password,
+
+        @NotBlank
+        String firstName,
+
+        @NotBlank
+        String lastName,
+
         @NotNull
         TrainingType.TrainingTypeName specialization,
         @NotNull

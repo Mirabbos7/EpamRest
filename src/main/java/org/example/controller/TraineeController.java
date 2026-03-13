@@ -1,97 +1,130 @@
 package org.example.controller;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.dto.request.*;
 import org.example.dto.response.*;
 import org.example.entity.TrainingType;
 import org.example.service.TraineeService;
-import org.springframework.http.HttpStatus;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.Date;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/trainees")
 @RequiredArgsConstructor
-@Api(tags = "Trainee Management")
+@Tag(name = "Trainee", description = "Trainee management endpoints")
 public class TraineeController {
 
     private final TraineeService traineeService;
 
+    // 1. POST /api/trainees/register
+    @Operation(summary = "Register a new Trainee")
     @PostMapping("/register")
-    @ApiOperation("Trainee Registration")
-    @ResponseStatus(HttpStatus.CREATED)
-    public RegistrationResponse register(@Valid @RequestBody TraineeDtoRequest request) {
-        return traineeService.create(request);
+    public ResponseEntity<RegistrationResponse> register(
+            @Valid @RequestBody TraineeDtoRequest request) {
+        log.info("POST /api/trainees/register firstName={}", request.firstName());
+        RegistrationResponse response = traineeService.create(request);
+        return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/login")
-    @ApiOperation("Trainee Login")
-    public void login(@Valid @RequestBody UserLoginDtoRequest request) {
-        // Тут сервис проверяет username/password
-        traineeService.matchUsernameAndPassword(request.username(), request.password());
+    // 5. GET /api/trainees/{username}
+    @Operation(summary = "Get Trainee profile by username")
+    @GetMapping("/{username}")
+    public ResponseEntity<TraineeResponse> getProfile(
+            @PathVariable String username,
+            @RequestHeader("username") String authUsername,
+            @RequestHeader("password") String authPassword) {
+        log.info("GET /api/trainees/{}", username);
+        return traineeService.findByUsername(authUsername, authPassword)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/change-password")
-    @ApiOperation("Change Trainee Password")
-    public void changePassword(@Valid @RequestBody ChangePasswordRequest request) {
-        traineeService.changePassword(request);
+    // 6. PUT /api/trainees
+    @Operation(summary = "Update Trainee profile")
+    @PutMapping
+    public ResponseEntity<TraineeResponse> update(
+            @RequestHeader("username") String authUsername,
+            @RequestHeader("password") String authPassword,
+            @Valid @RequestBody UpdateTraineeRequest request) {
+        log.info("PUT /api/trainees username={}", request.username());
+        TraineeResponse response = traineeService.update(authUsername, authPassword, request);
+        return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/profile")
-    @ApiOperation("Get Trainee Profile")
-    public TraineeResponse getProfile(@RequestParam String username, @RequestParam String password) {
-        return traineeService.findByUsername(new UserLoginDtoRequest(username, password))
-                .orElseThrow(() -> new RuntimeException("Trainee not found"));
+    // 7. DELETE /api/trainees/{username}
+    @Operation(summary = "Delete Trainee profile")
+    @DeleteMapping("/{username}")
+    public ResponseEntity<Void> delete(
+            @PathVariable String username,
+            @RequestHeader("username") String authUsername,
+            @RequestHeader("password") String authPassword) {
+        log.info("DELETE /api/trainees/{}", username);
+        traineeService.delete(authUsername, authPassword);
+        return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/profile")
-    @ApiOperation("Update Trainee Profile")
-    public TraineeResponse updateProfile(@Valid @RequestBody UpdateTraineeRequest request) {
-        return traineeService.update(request);
+    // 10. GET /api/trainees/{username}/unassigned-trainers
+    @Operation(summary = "Get active trainers not assigned to trainee")
+    @GetMapping("/{username}/unassigned-trainers")
+    public ResponseEntity<List<TrainerShortResponse>> getUnassignedTrainers(
+            @PathVariable String username,
+            @RequestHeader("username") String authUsername,
+            @RequestHeader("password") String authPassword) {
+        log.info("GET /api/trainees/{}/unassigned-trainers", username);
+        List<TrainerShortResponse> trainers =
+                traineeService.getUnassignedTrainers(authUsername, authPassword);
+        return ResponseEntity.ok(trainers);
     }
 
-    @DeleteMapping
-    @ApiOperation("Delete Trainee Profile")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@Valid @RequestBody UserLoginDtoRequest request) {
-        traineeService.delete(request);
-    }
-
-    @GetMapping("/trainings")
-    @ApiOperation("Get Trainee Trainings List")
-    public List<TrainingResponse> getTrainings(
-            @RequestParam String username,
-            @RequestParam String password,
-            @RequestParam(required = false) Date fromDate,
-            @RequestParam(required = false) Date toDate,
-            @RequestParam(required = false) String trainerName,
-            @RequestParam(required = false) TrainingType.TrainingTypeName typeName
-    ) {
-        return traineeService.getTrainings(username, password, fromDate, toDate, trainerName, typeName);
-    }
-
-    @GetMapping("/trainers/unassigned")
-    @ApiOperation("Get Not Assigned Active Trainers")
-    public List<TrainerShortResponse> getUnassignedTrainers(@Valid @RequestBody UserLoginDtoRequest request) {
-        return traineeService.getUnassignedTrainers(request);
-    }
-
+    // 11. PUT /api/trainees/trainers
+    @Operation(summary = "Update Trainee's trainer list")
     @PutMapping("/trainers")
-    @ApiOperation("Update Trainee's Trainer List")
-    public TraineeResponse updateTrainers(@Valid @RequestBody UpdateTraineeTrainersRequest request) {
-        return traineeService.updateTrainers(request);
+    public ResponseEntity<TraineeResponse> updateTrainers(
+            @RequestHeader("username") String authUsername,
+            @RequestHeader("password") String authPassword,
+            @Valid @RequestBody UpdateTraineeTrainersRequest request) {
+        log.info("PUT /api/trainees/trainers traineeUsername={}", request.username());
+        TraineeResponse response =
+                traineeService.updateTrainers(authUsername, authPassword, request);
+        return ResponseEntity.ok(response);
     }
 
-    @PatchMapping("/activate")
-    @ApiOperation("Activate/Deactivate Trainee")
-    public void setActive(@RequestParam String username,
-                          @RequestParam String password,
-                          @RequestParam boolean active) {
-        traineeService.setActive(username, password, active);
+    // 12. GET /api/trainees/{username}/trainings
+    @Operation(summary = "Get Trainee trainings list with optional filters")
+    @GetMapping("/{username}/trainings")
+    public ResponseEntity<List<TrainingResponse>> getTrainings(
+            @PathVariable String username,
+            @RequestHeader("username") String authUsername,
+            @RequestHeader("password") String authPassword,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date fromDate,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date toDate,
+            @RequestParam(required = false) String trainerName,
+            @RequestParam(required = false) TrainingType.TrainingTypeName trainingType) {
+        log.info("GET /api/trainees/{}/trainings", username);
+        List<TrainingResponse> trainings = traineeService.getTrainings(
+                authUsername, authPassword, fromDate, toDate, trainerName, trainingType);
+        return ResponseEntity.ok(trainings);
+    }
+
+    // 15. PATCH /api/trainees/active
+    @Operation(summary = "Activate or deactivate Trainee")
+    @PatchMapping("/active")
+    public ResponseEntity<Void> setActive(
+            @RequestHeader("username") String authUsername,
+            @RequestHeader("password") String authPassword,
+            @RequestParam String username,
+            @RequestParam boolean isActive) {
+        log.info("PATCH /api/trainees/active username={} isActive={}", username, isActive);
+        traineeService.setActive(authUsername, authPassword, isActive);
+        return ResponseEntity.ok().build();
     }
 }
