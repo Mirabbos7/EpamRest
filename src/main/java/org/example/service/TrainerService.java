@@ -13,11 +13,11 @@ public interface TrainerService {
 
     boolean matchUsernameAndPassword(String username, String password);
 
-    Optional<TrainerResponse> findByUsername(UserLoginDtoRequest request);
+    Optional<TrainerResponse> findByUsername(String username, String password);
 
     void changePassword(ChangePasswordRequest request);
 
-    TrainerResponse update(UpdateTrainerRequest request);
+    TrainerResponse update(String username, String password, UpdateTrainerRequest updateTraineeRequest);
 
     void setActive(String username, String password, boolean active);
 

@@ -35,8 +35,6 @@ public class TrainerServiceImpl implements TrainerService {
     private final TrainerMapper trainerMapper;
     private final TrainingMapper trainingMapper;
 
-    // ---------------------------------------------------------- registration
-
     @Override
     @Transactional
     public RegistrationResponse create(TrainerDtoRequest request) {
@@ -56,25 +54,19 @@ public class TrainerServiceImpl implements TrainerService {
         return new RegistrationResponse(user.getUsername(), user.getPassword());
     }
 
-    // ------------------------------------------------------- authentication
-
     @Override
     public boolean matchUsernameAndPassword(String username, String password) {
         return trainerRepository.existsByUserUsernameAndUserPassword(username, password);
     }
 
-    // ---------------------------------------------------------- find profile
-
     @Override
     @Transactional(readOnly = true)
-    public Optional<TrainerResponse> findByUsername(UserLoginDtoRequest request) {
-        authService.authenticate(request.username(), request.password(),
+    public Optional<TrainerResponse> findByUsername(String username, String password) {
+        authService.authenticate(username, password,
                 trainerRepository::existsByUserUsernameAndUserPassword);
-        return trainerRepository.findByUserUsername(request.username())
+        return trainerRepository.findByUserUsername(username)
                 .map(trainerMapper::toResponse);
     }
-
-    // -------------------------------------------------------- change password
 
     @Override
     @Transactional
@@ -88,20 +80,20 @@ public class TrainerServiceImpl implements TrainerService {
         log.info("Password changed for trainer: username={}", request.username());
     }
 
-    // ---------------------------------------------------------- update profile
-
     @Override
     @Transactional
-    public TrainerResponse update(UpdateTrainerRequest request) {
-        authService.authenticate(request.username(), request.username(),
+    public TrainerResponse update(String username, String password, UpdateTrainerRequest request) {
+        authService.authenticate(username, password,
                 trainerRepository::existsByUserUsernameAndUserPassword);
 
         Trainer trainer = getTrainerByUsername(request.username());
-        trainerMapper.updateEntity(request, trainer);
+        User user = trainer.getUser();
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
+        user.setActive(request.isActive());
+
         return trainerMapper.toResponse(trainerRepository.save(trainer));
     }
-
-    // ---------------------------------------------------------- activate
 
     @Override
     @Transactional
@@ -114,8 +106,6 @@ public class TrainerServiceImpl implements TrainerService {
         trainerRepository.save(trainer);
         log.info("Trainer active={} for username={}", active, username);
     }
-
-    // --------------------------------------------------------- trainings list
 
     @Override
     @Transactional(readOnly = true)
@@ -135,9 +125,6 @@ public class TrainerServiceImpl implements TrainerService {
                 .map(trainingMapper::toTrainerTrainingResponse)
                 .toList();
     }
-
-    // ----------------------------------------------------------- helper
-
     private Trainer getTrainerByUsername(String username) {
         return trainerRepository.findByUserUsername(username)
                 .orElseThrow(() -> new RuntimeException("Trainer not found: " + username));

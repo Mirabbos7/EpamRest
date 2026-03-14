@@ -9,7 +9,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
-@Mapper(componentModel = "spring", uses = {TraineeMapper.class})
+@Mapper(componentModel = "spring")
 public interface TrainerMapper {
 
     @Mapping(target = "id",           ignore = true)

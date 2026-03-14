@@ -1,7 +1,7 @@
 package org.example.dto.request;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.Date;
 
 public record UpdateTraineeRequest(
@@ -12,5 +12,5 @@ public record UpdateTraineeRequest(
         Date dateOfBirth,
         String address,
         @NotNull
-        boolean isActive
+        Boolean isActive
 ) {}

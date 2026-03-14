@@ -1,7 +1,6 @@
 package org.example.dto.request;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
 public record ChangePasswordRequest(
         @NotBlank

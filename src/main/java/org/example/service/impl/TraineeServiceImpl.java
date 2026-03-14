@@ -38,8 +38,6 @@ public class TraineeServiceImpl implements TraineeService {
     private final TrainerMapper trainerMapper;
     private final TrainingMapper trainingMapper;
 
-    // ---------------------------------------------------------- registration
-
     @Override
     @Transactional
     public RegistrationResponse create(TraineeDtoRequest request) {
@@ -53,14 +51,10 @@ public class TraineeServiceImpl implements TraineeService {
         return new RegistrationResponse(user.getUsername(), user.getPassword());
     }
 
-    // ------------------------------------------------------- authentication
-
     @Override
     public boolean matchUsernameAndPassword(String username, String password) {
         return traineeRepository.existsByUserUsernameAndUserPassword(username, password);
     }
-
-    // ---------------------------------------------------------- find profile
 
     @Override
     @Transactional(readOnly = true)
@@ -70,8 +64,6 @@ public class TraineeServiceImpl implements TraineeService {
         return traineeRepository.findByUserUsername(username)
                 .map(traineeMapper::toResponse);
     }
-
-    // -------------------------------------------------------- change password
 
     @Override
     @Transactional
@@ -85,19 +77,24 @@ public class TraineeServiceImpl implements TraineeService {
         log.info("Password changed for trainee: username={}", request.username());
     }
 
-    // ---------------------------------------------------------- update profile
-
     @Override
     @Transactional
     public TraineeResponse update(String username, String password, UpdateTraineeRequest request) {
         authService.authenticate(username, password,
                 traineeRepository::existsByUserUsernameAndUserPassword);
+
         Trainee trainee = getTraineeByUsername(request.username());
-        traineeMapper.updateEntity(request, trainee);
+
+        User user = trainee.getUser();
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
+        user.setActive(request.isActive());
+
+        trainee.setDateOfBirth(request.dateOfBirth());
+        trainee.setAddress(request.address());
+
         return traineeMapper.toResponse(traineeRepository.save(trainee));
     }
-
-    // ---------------------------------------------------------- activate
 
     @Override
     @Transactional
@@ -111,8 +108,6 @@ public class TraineeServiceImpl implements TraineeService {
         log.info("Trainee active={} for username={}", active, username);
     }
 
-    // ----------------------------------------------------------- delete
-
     @Override
     @Transactional
     public void delete(String username, String password) {
@@ -122,8 +117,6 @@ public class TraineeServiceImpl implements TraineeService {
         traineeRepository.delete(trainee);
         log.info("Deleted trainee: username={}", username);
     }
-
-    // --------------------------------------------------------- trainings list
 
     @Override
     @Transactional(readOnly = true)
@@ -147,8 +140,6 @@ public class TraineeServiceImpl implements TraineeService {
                 .toList();
     }
 
-    // ------------------------------------------------------ unassigned trainers
-
     @Override
     @Transactional(readOnly = true)
     public List<TrainerShortResponse> getUnassignedTrainers(String username, String password) {
@@ -165,8 +156,6 @@ public class TraineeServiceImpl implements TraineeService {
                 .toList();
     }
 
-    // -------------------------------------------------- update trainers list
-
     @Override
     @Transactional
     public TraineeResponse updateTrainers(String authUsername,
@@ -182,8 +171,6 @@ public class TraineeServiceImpl implements TraineeService {
 
         return traineeMapper.toResponse(traineeRepository.save(trainee));
     }
-
-    // ----------------------------------------------------------- helper
 
     private Trainee getTraineeByUsername(String username) {
         return traineeRepository.findByUserUsername(username)

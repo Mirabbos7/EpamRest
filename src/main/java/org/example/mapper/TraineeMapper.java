@@ -4,12 +4,14 @@ import org.example.dto.request.TraineeDtoRequest;
 import org.example.dto.request.UpdateTraineeRequest;
 import org.example.dto.response.TraineeResponse;
 import org.example.dto.response.TraineeShortResponse;
+import org.example.dto.response.TrainerShortResponse;
 import org.example.entity.Trainee;
+import org.example.entity.Trainer;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
-@Mapper(componentModel = "spring", uses = {TrainerMapper.class})
+@Mapper(componentModel = "spring")
 public interface TraineeMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "user", ignore = true)
@@ -28,6 +30,11 @@ public interface TraineeMapper {
     @Mapping(target = "firstName", source = "user.firstName")
     @Mapping(target = "lastName",  source = "user.lastName")
     TraineeShortResponse toShortResponse(Trainee trainee);
+    @Mapping(target = "username",       source = "user.username")
+    @Mapping(target = "firstName",      source = "user.firstName")
+    @Mapping(target = "lastName",       source = "user.lastName")
+    @Mapping(target = "specialization", source = "trainingType.trainingTypeName")
+    TrainerShortResponse trainerToShortResponse(Trainer trainer);
 
     @Mapping(target = "id",               ignore = true)
     @Mapping(target = "user.username",    ignore = true)
