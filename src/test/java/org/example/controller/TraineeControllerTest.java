@@ -1,6 +1,7 @@
 package org.example.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.example.dto.request.*;
 import org.example.dto.response.*;
 import org.example.entity.TrainingType;
@@ -23,10 +24,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(TraineeController.class)
+@RequiredArgsConstructor
 class TraineeControllerTest {
 
-    @Autowired private MockMvc mockMvc;
-    @Autowired private ObjectMapper objectMapper;
+    private MockMvc mockMvc;
+    private ObjectMapper objectMapper;
     @MockBean  private TraineeService traineeService;
 
     @Test
