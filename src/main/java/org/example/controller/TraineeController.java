@@ -25,7 +25,6 @@ public class TraineeController {
 
     private final TraineeService traineeService;
 
-    // 1. POST /api/trainees/register
     @Operation(summary = "Register a new Trainee")
     @PostMapping("/register")
     public ResponseEntity<RegistrationResponse> register(
@@ -35,7 +34,6 @@ public class TraineeController {
         return ResponseEntity.ok(response);
     }
 
-    // 5. GET /api/trainees/{username}
     @Operation(summary = "Get Trainee profile by username")
     @GetMapping("/{username}")
     public ResponseEntity<TraineeResponse> getProfile(
@@ -48,7 +46,6 @@ public class TraineeController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // 6. PUT /api/trainees
     @Operation(summary = "Update Trainee profile")
     @PutMapping
     public ResponseEntity<TraineeResponse> update(
@@ -60,7 +57,6 @@ public class TraineeController {
         return ResponseEntity.ok(response);
     }
 
-    // 7. DELETE /api/trainees/{username}
     @Operation(summary = "Delete Trainee profile")
     @DeleteMapping("/{username}")
     public ResponseEntity<Void> delete(
@@ -68,11 +64,10 @@ public class TraineeController {
             @RequestHeader("username") String authUsername,
             @RequestHeader("password") String authPassword) {
         log.info("DELETE /api/trainees/{}", username);
-        traineeService.delete(authUsername, authPassword);
+        traineeService.delete(username, authPassword);
         return ResponseEntity.ok().build();
     }
 
-    // 10. GET /api/trainees/{username}/unassigned-trainers
     @Operation(summary = "Get active trainers not assigned to trainee")
     @GetMapping("/{username}/unassigned-trainers")
     public ResponseEntity<List<TrainerShortResponse>> getUnassignedTrainers(
@@ -85,7 +80,6 @@ public class TraineeController {
         return ResponseEntity.ok(trainers);
     }
 
-    // 11. PUT /api/trainees/trainers
     @Operation(summary = "Update Trainee's trainer list")
     @PutMapping("/trainers")
     public ResponseEntity<TraineeResponse> updateTrainers(
@@ -98,7 +92,6 @@ public class TraineeController {
         return ResponseEntity.ok(response);
     }
 
-    // 12. GET /api/trainees/{username}/trainings
     @Operation(summary = "Get Trainee trainings list with optional filters")
     @GetMapping("/{username}/trainings")
     public ResponseEntity<List<TrainingResponse>> getTrainings(
@@ -115,7 +108,6 @@ public class TraineeController {
         return ResponseEntity.ok(trainings);
     }
 
-    // 15. PATCH /api/trainees/active
     @Operation(summary = "Activate or deactivate Trainee")
     @PatchMapping("/active")
     public ResponseEntity<Void> setActive(
