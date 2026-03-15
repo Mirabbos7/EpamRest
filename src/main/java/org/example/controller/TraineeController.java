@@ -40,6 +40,10 @@ public class TraineeController {
             @PathVariable String username,
             @RequestHeader("username") String authUsername,
             @RequestHeader("password") String authPassword) {
+        // TODO:
+        //  [Optional]
+        //  Given that most of your endpoints expect same custom username header, can you find a way to log API calls in more
+        //  centralized manner? That kind of solution should take HTTP verbs and paths dynamically.
         log.info("GET /api/trainees/{}", username);
         return traineeService.findByUsername(authUsername, authPassword)
                 .map(ResponseEntity::ok)
@@ -61,6 +65,8 @@ public class TraineeController {
     @DeleteMapping("/{username}")
     public ResponseEntity<Void> delete(
             @PathVariable String username,
+            // TODO:
+            //  If you don't use the method argument, don't declare it
             @RequestHeader("username") String authUsername,
             @RequestHeader("password") String authPassword) {
         log.info("DELETE /api/trainees/{}", username);
@@ -68,6 +74,9 @@ public class TraineeController {
         return ResponseEntity.ok().build();
     }
 
+    // TODO:
+    //  [Optional]
+    //  Can be more RESTful endpoint path: /{username}/trainers/unassigned
     @Operation(summary = "Get active trainers not assigned to trainee")
     @GetMapping("/{username}/unassigned-trainers")
     public ResponseEntity<List<TrainerShortResponse>> getUnassignedTrainers(
@@ -103,6 +112,10 @@ public class TraineeController {
             @RequestParam(required = false) String trainerName,
             @RequestParam(required = false) TrainingType.TrainingTypeName trainingType) {
         log.info("GET /api/trainees/{}/trainings", username);
+        // TODO:
+        //  What can potentially go wrong with fromDate-toDate pair?
+        //  Think of a case when both dates are formatted correctly, but it's still better to throw an exception
+        //  instead of going deeper in the stack (service call/database query)
         List<TrainingResponse> trainings = traineeService.getTrainings(
                 authUsername, authPassword, fromDate, toDate, trainerName, trainingType);
         return ResponseEntity.ok(trainings);
@@ -115,6 +128,11 @@ public class TraineeController {
             @RequestHeader("password") String authPassword,
             @RequestParam String username,
             @RequestParam boolean isActive) {
+        // TODO:
+        //  [Optional]
+        //  Your approach to pass an explicit flag is totally fine and I would even say it is cleaner and safer.
+        //  However, if we stick to the task 'Activate/De-activate Trainee/Trainer profile not idempotent action',
+        //  it is more expected to have a toggle action without an isActive param which does smth like active=!active
         log.info("PATCH /api/trainees/active username={} isActive={}", username, isActive);
         traineeService.setActive(authUsername, authPassword, isActive);
         return ResponseEntity.ok().build();
