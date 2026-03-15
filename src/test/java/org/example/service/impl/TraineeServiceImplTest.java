@@ -24,6 +24,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.util.Date;
 import java.util.List;
@@ -186,7 +187,7 @@ class TraineeServiceImplTest {
         training.setTrainingType(trainingType);
         training.setTrainer(trainer);
 
-        when(trainingRepository.findByTraineeUserUsername("john.doe"))
+        when(trainingRepository.findAll(any(Specification.class)))
                 .thenReturn(List.of(training));
 
         List<TrainingResponse> result = traineeService.getTrainings(

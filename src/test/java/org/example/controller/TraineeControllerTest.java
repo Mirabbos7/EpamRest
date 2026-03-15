@@ -131,7 +131,7 @@ class TraineeControllerTest {
         when(traineeService.getUnassignedTrainers("John.Doe", "pass123"))
                 .thenReturn(List.of(trainer));
 
-        mockMvc.perform(get("/api/trainees/John.Doe/unassigned-trainers")
+        mockMvc.perform(get("/api/trainees/John.Doe/trainers/unassigned")
                         .header("username", "John.Doe")
                         .header("password", "pass123"))
                 .andExpect(status().isOk())

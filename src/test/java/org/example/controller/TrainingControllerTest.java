@@ -71,33 +71,26 @@ class TrainingControllerTest {
 
     @Test
     void getTrainingTypes_shouldReturn200_withList() throws Exception {
-        TrainingType type1 = new TrainingType();
-        TrainingType type2 = new TrainingType();
-
-        TrainingTypeResponse response1 = new TrainingTypeResponse(1L, "CARDIO");
-        TrainingTypeResponse response2 = new TrainingTypeResponse(2L, "STRENGTH");
-
-        when(trainingTypeRepository.findAll()).thenReturn(List.of(type1, type2));
-        when(trainingTypeMapper.toResponse(type1)).thenReturn(response1);
-        when(trainingTypeMapper.toResponse(type2)).thenReturn(response2);
+        when(trainingService.getTrainingTypes()).thenReturn(
+                List.of(new TrainingTypeResponse(1L, "CARDIO"),
+                        new TrainingTypeResponse(2L, "STRENGTH")));
 
         mockMvc.perform(get("/api/trainings/types"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].trainingType", is("CARDIO")))
                 .andExpect(jsonPath("$[1].trainingType", is("STRENGTH")));
 
-        verify(trainingTypeRepository).findAll();
-        verify(trainingTypeMapper, times(2)).toResponse(any());
+        verify(trainingService).getTrainingTypes();
     }
 
     @Test
     void getTrainingTypes_shouldReturn200_withEmptyList() throws Exception {
-        when(trainingTypeRepository.findAll()).thenReturn(List.of());
+        when(trainingService.getTrainingTypes()).thenReturn(List.of());
 
         mockMvc.perform(get("/api/trainings/types"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()", is(0)));
 
-        verify(trainingTypeRepository).findAll();
+        verify(trainingService).getTrainingTypes();
     }
 }
