@@ -42,6 +42,8 @@ public class TrainingController {
     @GetMapping("/types")
     public ResponseEntity<List<TrainingTypeResponse>> getTrainingTypes() {
         log.info("GET /api/trainings/types");
+        // TODO:
+        //  What are the pros and cons of controller using repository directly vs going through service layer?
         List<TrainingTypeResponse> types = trainingTypeRepository.findAll()
                 .stream()
                 .map(trainingTypeMapper::toResponse)

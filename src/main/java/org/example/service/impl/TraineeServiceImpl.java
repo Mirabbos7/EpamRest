@@ -128,7 +128,10 @@ public class TraineeServiceImpl implements TraineeService {
                                                TrainingType.TrainingTypeName trainingTypeName) {
         authService.authenticate(username, password,
                 traineeRepository::existsByUserUsernameAndUserPassword);
-
+        // TODO:
+        //  3 duplicated instances of the code below, similar filters need to be extracted.
+        //  [Optional]
+        //  Criteria API can be very useful here
         return trainingRepository.findByTraineeUserUsername(username).stream()
                 .filter(t -> fromDate == null || !t.getDate().before(fromDate))
                 .filter(t -> toDate == null || !t.getDate().after(toDate))
