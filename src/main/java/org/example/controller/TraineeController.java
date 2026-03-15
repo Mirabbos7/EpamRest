@@ -61,15 +61,10 @@ public class TraineeController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Delete Trainee profile")
     @DeleteMapping("/{username}")
     public ResponseEntity<Void> delete(
             @PathVariable String username,
-            // TODO:
-            //  If you don't use the method argument, don't declare it
-            @RequestHeader("username") String authUsername,
             @RequestHeader("password") String authPassword) {
-        log.info("DELETE /api/trainees/{}", username);
         traineeService.delete(username, authPassword);
         return ResponseEntity.ok().build();
     }
@@ -78,7 +73,7 @@ public class TraineeController {
     //  [Optional]
     //  Can be more RESTful endpoint path: /{username}/trainers/unassigned
     @Operation(summary = "Get active trainers not assigned to trainee")
-    @GetMapping("/{username}/unassigned-trainers")
+    @GetMapping("/{username}/trainers/unassigned")
     public ResponseEntity<List<TrainerShortResponse>> getUnassignedTrainers(
             @PathVariable String username,
             @RequestHeader("username") String authUsername,
@@ -101,7 +96,6 @@ public class TraineeController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Get Trainee trainings list with optional filters")
     @GetMapping("/{username}/trainings")
     public ResponseEntity<List<TrainingResponse>> getTrainings(
             @PathVariable String username,
@@ -111,11 +105,11 @@ public class TraineeController {
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date toDate,
             @RequestParam(required = false) String trainerName,
             @RequestParam(required = false) TrainingType.TrainingTypeName trainingType) {
-        log.info("GET /api/trainees/{}/trainings", username);
-        // TODO:
-        //  What can potentially go wrong with fromDate-toDate pair?
-        //  Think of a case when both dates are formatted correctly, but it's still better to throw an exception
-        //  instead of going deeper in the stack (service call/database query)
+
+        if (fromDate != null && toDate != null && fromDate.after(toDate)) {
+            throw new IllegalArgumentException("fromDate must not be after toDate");
+        }
+
         List<TrainingResponse> trainings = traineeService.getTrainings(
                 authUsername, authPassword, fromDate, toDate, trainerName, trainingType);
         return ResponseEntity.ok(trainings);
