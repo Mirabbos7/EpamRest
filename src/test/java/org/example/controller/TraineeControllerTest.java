@@ -1,17 +1,16 @@
 package org.example.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import org.example.dto.request.*;
 import org.example.dto.response.*;
 import org.example.entity.TrainingType;
 import org.example.service.TraineeService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 
 import java.util.Date;
 import java.util.List;
@@ -24,12 +23,16 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(TraineeController.class)
-@RequiredArgsConstructor
 class TraineeControllerTest {
 
+    @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
     private ObjectMapper objectMapper;
-    @MockBean  private TraineeService traineeService;
+
+    @MockitoBean
+    private TraineeService traineeService;
 
     @Test
     void register_shouldReturn200_withRegistrationResponse() throws Exception {

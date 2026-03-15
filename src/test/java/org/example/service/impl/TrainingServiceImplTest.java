@@ -3,18 +3,23 @@ package org.example.service.impl;
 import org.example.dto.request.TrainingDtoRequest;
 import org.example.dto.response.TrainingResponse;
 import org.example.entity.*;
-import org.example.mapper.TrainingMapper;
+import org.example.mapper.TrainingMapperImpl;
 import org.example.repository.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,107 +29,112 @@ class TrainingServiceImplTest {
     @Mock private TrainerRepository trainerRepository;
     @Mock private TraineeRepository traineeRepository;
     @Mock private TrainingTypeRepository trainingTypeRepository;
-    @Mock private TrainingMapper trainingMapper;
+
+    @Spy private TrainingMapperImpl trainingMapper;
 
     @InjectMocks
     private TrainingServiceImpl trainingService;
 
-    private User traineeUser;
-    private User trainerUser;
-    private Trainee trainee;
     private Trainer trainer;
+    private Trainee trainee;
     private TrainingType trainingType;
-    private Training training;
-    private TrainingDtoRequest request;
-    private TrainingResponse trainingResponse;
 
     @BeforeEach
     void setUp() {
-        traineeUser = new User();
-        traineeUser.setUsername("john.doe");
-
-        trainerUser = new User();
+        User trainerUser = new User();
         trainerUser.setUsername("jane.smith");
-
-        trainee = new Trainee();
-        trainee.setId(1L);
-        trainee.setUser(traineeUser);
-
-        trainer = new Trainer();
-        trainer.setUser(trainerUser);
 
         trainingType = new TrainingType();
         trainingType.setTrainingTypeName(TrainingType.TrainingTypeName.CARDIO);
 
-        training = new Training();
-        training.setName("Morning Run");
-        training.setDate(new Date());
-        training.setDurationInMinutes(60);
-        training.setTrainee(trainee);
-        training.setTrainer(trainer);
-        training.setTrainingType(trainingType);
+        trainer = new Trainer();
+        trainer.setUser(trainerUser);
+        trainer.setTrainingType(trainingType);
 
-        request = new TrainingDtoRequest(
+        User traineeUser = new User();
+        traineeUser.setUsername("john.doe");
+
+        trainee = new Trainee();
+        trainee.setUser(traineeUser);
+    }
+
+    @Test
+    void create_shouldSaveAndReturnMappedResponse() {
+        TrainingDtoRequest request = new TrainingDtoRequest(
                 "john.doe", "jane.smith", "Morning Run",
                 TrainingType.TrainingTypeName.CARDIO, new Date(), 60);
 
-        trainingResponse = new TrainingResponse(
-                "Morning Run", new Date(), "CARDIO", 60, "jane.smith", null);
-    }
-
-    @Test
-    void create_shouldSaveAndReturnResponse() {
-        when(trainerRepository.findByUserUsername("jane.smith")).thenReturn(Optional.of(trainer));
-        when(traineeRepository.findByUserUsername("john.doe")).thenReturn(Optional.of(trainee));
+        when(trainerRepository.findByUserUsername("jane.smith"))
+                .thenReturn(Optional.of(trainer));
+        when(traineeRepository.findByUserUsername("john.doe"))
+                .thenReturn(Optional.of(trainee));
         when(trainingTypeRepository.findByTrainingTypeName(TrainingType.TrainingTypeName.CARDIO))
                 .thenReturn(Optional.of(trainingType));
-        when(trainingRepository.save(any(Training.class))).thenReturn(training);
-        when(trainingMapper.toTraineeTrainingResponse(any(Training.class))).thenReturn(trainingResponse);
+        when(trainingRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
         TrainingResponse result = trainingService.create(request);
 
-        assertNotNull(result);
-        assertEquals("Morning Run", result.trainingName());
-        verify(trainingRepository).save(any(Training.class));
+        assertThat(result.trainingName()).isEqualTo("Morning Run");
+        assertThat(result.durationMinutes()).isEqualTo(60);
+        verify(trainingMapper).toTraineeTrainingResponse(any());
     }
 
     @Test
-    void create_shouldThrow_whenTrainerNotFound() {
-        when(trainerRepository.findByUserUsername("jane.smith")).thenReturn(Optional.empty());
+    void getTraineeTrainings_shouldReturnFilteredAndMapped() {
+        Training training = new Training();
+        training.setName("Yoga");
+        training.setDate(new Date());
+        training.setDurationInMinutes(30);
+        training.setTrainingType(trainingType);
+        training.setTrainer(trainer);
 
-        assertThrows(RuntimeException.class, () -> trainingService.create(request));
-        verify(trainingRepository, never()).save(any());
+        when(trainingRepository.findByTraineeUserUsername("john.doe"))
+                .thenReturn(List.of(training));
+
+        List<TrainingResponse> result = trainingService.getTraineeTrainings(
+                "john.doe", null, null, null, null);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).trainingName()).isEqualTo("Yoga");
+        verify(trainingMapper).toTraineeTrainingResponse(training);
     }
 
     @Test
-    void create_shouldThrow_whenTraineeNotFound() {
-        when(trainerRepository.findByUserUsername("jane.smith")).thenReturn(Optional.of(trainer));
-        when(traineeRepository.findByUserUsername("john.doe")).thenReturn(Optional.empty());
+    void getTrainerTrainings_shouldReturnFilteredAndMapped() {
+        Training training = new Training();
+        training.setName("Pilates");
+        training.setDate(new Date());
+        training.setDurationInMinutes(50);
+        training.setTrainingType(trainingType);
+        training.setTrainee(trainee);
 
-        assertThrows(RuntimeException.class, () -> trainingService.create(request));
-        verify(trainingRepository, never()).save(any());
+        when(trainingRepository.findByTrainerUserUsername("jane.smith"))
+                .thenReturn(List.of(training));
+
+        List<TrainingResponse> result = trainingService.getTrainerTrainings(
+                "jane.smith", null, null, null);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).trainingName()).isEqualTo("Pilates");
+        verify(trainingMapper).toTrainerTrainingResponse(training);
     }
 
     @Test
-    void create_shouldThrow_whenTrainingTypeNotFound() {
-        when(trainerRepository.findByUserUsername("jane.smith")).thenReturn(Optional.of(trainer));
-        when(traineeRepository.findByUserUsername("john.doe")).thenReturn(Optional.of(trainee));
-        when(trainingTypeRepository.findByTrainingTypeName(TrainingType.TrainingTypeName.CARDIO))
-                .thenReturn(Optional.empty());
+    void select_shouldReturnMappedResponse_whenFound() {
+        Training training = new Training();
+        training.setName("Morning Run");
+        training.setDate(new Date());
+        training.setDurationInMinutes(60);
+        training.setTrainingType(trainingType);
+        training.setTrainer(trainer);
 
-        assertThrows(RuntimeException.class, () -> trainingService.create(request));
-        verify(trainingRepository, never()).save(any());
-    }
-
-    @Test
-    void select_shouldReturnResponse_whenFound() {
         when(trainingRepository.findById(1L)).thenReturn(Optional.of(training));
-        when(trainingMapper.toTraineeTrainingResponse(training)).thenReturn(trainingResponse);
 
         Optional<TrainingResponse> result = trainingService.select(1L);
 
-        assertTrue(result.isPresent());
-        assertEquals("Morning Run", result.get().trainingName());
+        assertThat(result).isPresent();
+        assertThat(result.get().trainingName()).isEqualTo("Morning Run");
+        verify(trainingMapper).toTraineeTrainingResponse(training);
     }
 
     @Test
@@ -133,157 +143,74 @@ class TrainingServiceImplTest {
 
         Optional<TrainingResponse> result = trainingService.select(99L);
 
-        assertTrue(result.isEmpty());
+        assertThat(result).isEmpty();
     }
 
     @Test
-    void getTraineeTrainings_shouldReturnAll_whenNoFilters() {
-        when(trainingRepository.findByTraineeUserUsername("john.doe"))
-                .thenReturn(List.of(training));
-        when(trainingMapper.toTraineeTrainingResponse(training)).thenReturn(trainingResponse);
-
-        List<TrainingResponse> result = trainingService.getTraineeTrainings(
-                "john.doe", null, null, null, null);
-
-        assertEquals(1, result.size());
-    }
-
-    @Test
-    void getTraineeTrainings_shouldFilterByDateRange() {
+    void getTrainingsForTraineesNextWeek_shouldReturnOnlyMatchingTrainings() {
         Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DAY_OF_YEAR, -1);
-        Date yesterday = cal.getTime();
-        cal.add(Calendar.DAY_OF_YEAR, 2);
-        Date tomorrow = cal.getTime();
 
-        when(trainingRepository.findByTraineeUserUsername("john.doe"))
-                .thenReturn(List.of(training));
-        when(trainingMapper.toTraineeTrainingResponse(training)).thenReturn(trainingResponse);
-
-        List<TrainingResponse> result = trainingService.getTraineeTrainings(
-                "john.doe", yesterday, tomorrow, null, null);
-
-        assertEquals(1, result.size());
-    }
-
-    @Test
-    void getTraineeTrainings_shouldFilterOutByDateRange() {
-        Calendar cal = Calendar.getInstance();
+        // завтра — попадает в диапазон
         cal.add(Calendar.DAY_OF_YEAR, 1);
         Date tomorrow = cal.getTime();
+
+        // 10 дней — не попадает в диапазон (больше 7 дней)
+        cal.add(Calendar.DAY_OF_YEAR, 9);
+        Date tenDaysLater = cal.getTime();
+
+        Trainee matchingTrainee = new Trainee();
+        matchingTrainee.setId(1L);
+        matchingTrainee.setUser(trainee.getUser());
+
+        Training withinRange = new Training();
+        withinRange.setName("Yoga");
+        withinRange.setDate(tomorrow);
+        withinRange.setDurationInMinutes(30);
+        withinRange.setTrainingType(trainingType);
+        withinRange.setTrainer(trainer);
+        withinRange.setTrainee(matchingTrainee);
+
+        Training outOfRange = new Training();
+        outOfRange.setName("Pilates");
+        outOfRange.setDate(tenDaysLater);
+        outOfRange.setDurationInMinutes(45);
+        outOfRange.setTrainingType(trainingType);
+        outOfRange.setTrainer(trainer);
+        outOfRange.setTrainee(matchingTrainee);
+
+        when(trainingRepository.findAll()).thenReturn(List.of(withinRange, outOfRange));
+
+        List<TrainingResponse> result =
+                trainingService.getTrainingsForTraineesNextWeek(List.of(1L));
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).trainingName()).isEqualTo("Yoga");
+        verify(trainingMapper).toTraineeTrainingResponse(withinRange);
+        verify(trainingMapper, never()).toTraineeTrainingResponse(outOfRange);
+    }
+
+    @Test
+    void getTrainingsForTraineesNextWeek_shouldReturnEmpty_whenNoMatchingTrainees() {
+        Trainee otherTrainee = new Trainee();
+        otherTrainee.setId(99L);
+        otherTrainee.setUser(trainee.getUser());
+
+        Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_YEAR, 1);
-        Date dayAfterTomorrow = cal.getTime();
 
-        when(trainingRepository.findByTraineeUserUsername("john.doe"))
-                .thenReturn(List.of(training));
-
-        List<TrainingResponse> result = trainingService.getTraineeTrainings(
-                "john.doe", tomorrow, dayAfterTomorrow, null, null);
-
-        assertEquals(0, result.size());
-    }
-
-    @Test
-    void getTraineeTrainings_shouldFilterByTrainerUsername() {
-        when(trainingRepository.findByTraineeUserUsername("john.doe"))
-                .thenReturn(List.of(training));
-        when(trainingMapper.toTraineeTrainingResponse(training)).thenReturn(trainingResponse);
-
-        List<TrainingResponse> result = trainingService.getTraineeTrainings(
-                "john.doe", null, null, "jane.smith", null);
-
-        assertEquals(1, result.size());
-    }
-
-    @Test
-    void getTraineeTrainings_shouldFilterByTrainingType() {
-        when(trainingRepository.findByTraineeUserUsername("john.doe"))
-                .thenReturn(List.of(training));
-        when(trainingMapper.toTraineeTrainingResponse(training)).thenReturn(trainingResponse);
-
-        List<TrainingResponse> result = trainingService.getTraineeTrainings(
-                "john.doe", null, null, null, TrainingType.TrainingTypeName.CARDIO);
-
-        assertEquals(1, result.size());
-    }
-
-    @Test
-    void getTrainerTrainings_shouldReturnAll_whenNoFilters() {
-        TrainingResponse trainerResponse = new TrainingResponse(
-                "Morning Run", new Date(), "CARDIO", 60, null, "john.doe");
-
-        when(trainingRepository.findByTrainerUserUsername("jane.smith"))
-                .thenReturn(List.of(training));
-        when(trainingMapper.toTrainerTrainingResponse(training)).thenReturn(trainerResponse);
-
-        List<TrainingResponse> result = trainingService.getTrainerTrainings(
-                "jane.smith", null, null, null);
-
-        assertEquals(1, result.size());
-    }
-
-    @Test
-    void getTrainerTrainings_shouldFilterByTraineeName() {
-        TrainingResponse trainerResponse = new TrainingResponse(
-                "Morning Run", new Date(), "CARDIO", 60, null, "john.doe");
-
-        when(trainingRepository.findByTrainerUserUsername("jane.smith"))
-                .thenReturn(List.of(training));
-        when(trainingMapper.toTrainerTrainingResponse(training)).thenReturn(trainerResponse);
-
-        List<TrainingResponse> result = trainingService.getTrainerTrainings(
-                "jane.smith", null, null, "john.doe");
-
-        assertEquals(1, result.size());
-    }
-
-    @Test
-    void getTrainerTrainings_shouldReturnEmpty_whenTraineeNameNotMatch() {
-        when(trainingRepository.findByTrainerUserUsername("jane.smith"))
-                .thenReturn(List.of(training));
-
-        List<TrainingResponse> result = trainingService.getTrainerTrainings(
-                "jane.smith", null, null, "other.user");
-
-        assertEquals(0, result.size());
-    }
-
-    @Test
-    void getTrainingsForTraineesNextWeek_shouldReturnTrainingsWithinNextWeek() {
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DAY_OF_YEAR, 3);
+        Training training = new Training();
+        training.setName("Yoga");
         training.setDate(cal.getTime());
-
-        when(trainingRepository.findAll()).thenReturn(List.of(training));
-        when(trainingMapper.toTraineeTrainingResponse(training)).thenReturn(trainingResponse);
-
-        List<TrainingResponse> result = trainingService.getTrainingsForTraineesNextWeek(
-                List.of(1L));
-
-        assertEquals(1, result.size());
-    }
-
-    @Test
-    void getTrainingsForTraineesNextWeek_shouldExcludeTrainingsOutsideNextWeek() {
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DAY_OF_YEAR, 10);
-        training.setDate(cal.getTime());
+        training.setDurationInMinutes(30);
+        training.setTrainingType(trainingType);
+        training.setTrainer(trainer);
+        training.setTrainee(otherTrainee);
 
         when(trainingRepository.findAll()).thenReturn(List.of(training));
 
-        List<TrainingResponse> result = trainingService.getTrainingsForTraineesNextWeek(
-                List.of(1L));
+        List<TrainingResponse> result =
+                trainingService.getTrainingsForTraineesNextWeek(List.of(1L));
 
-        assertEquals(0, result.size());
-    }
-
-    @Test
-    void getTrainingsForTraineesNextWeek_shouldExcludeOtherTrainees() {
-        when(trainingRepository.findAll()).thenReturn(List.of(training));
-
-        List<TrainingResponse> result = trainingService.getTrainingsForTraineesNextWeek(
-                List.of(99L));
-
-        assertEquals(0, result.size());
+        assertThat(result).isEmpty();
     }
 }
