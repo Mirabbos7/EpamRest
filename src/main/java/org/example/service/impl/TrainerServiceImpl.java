@@ -15,6 +15,7 @@ import org.example.repository.TrainingTypeRepository;
 import org.example.service.AuthService;
 import org.example.service.TrainerService;
 import org.example.service.UserService;
+import org.example.specification.TrainingSpecification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -117,14 +118,14 @@ public class TrainerServiceImpl implements TrainerService {
         authService.authenticate(username, password,
                 trainerRepository::existsByUserUsernameAndUserPassword);
 
-        return trainingRepository.findByTrainerUserUsername(username).stream()
-                .filter(t -> fromDate == null || !t.getDate().before(fromDate))
-                .filter(t -> toDate == null || !t.getDate().after(toDate))
-                .filter(t -> traineeName == null ||
-                        t.getTrainee().getUser().getUsername().equalsIgnoreCase(traineeName))
+        return trainingRepository
+                .findAll(TrainingSpecification.byTrainerCriteria(
+                        username, fromDate, toDate, traineeName))
+                .stream()
                 .map(trainingMapper::toTrainerTrainingResponse)
                 .toList();
     }
+
     private Trainer getTrainerByUsername(String username) {
         return trainerRepository.findByUserUsername(username)
                 .orElseThrow(() -> new RuntimeException("Trainer not found: " + username));

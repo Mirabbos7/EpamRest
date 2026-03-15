@@ -17,6 +17,7 @@ import org.example.repository.TrainingRepository;
 import org.example.service.AuthService;
 import org.example.service.TraineeService;
 import org.example.service.UserService;
+import org.example.specification.TrainingSpecification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -128,17 +129,11 @@ public class TraineeServiceImpl implements TraineeService {
                                                TrainingType.TrainingTypeName trainingTypeName) {
         authService.authenticate(username, password,
                 traineeRepository::existsByUserUsernameAndUserPassword);
-        // TODO:
-        //  3 duplicated instances of the code below, similar filters need to be extracted.
-        //  [Optional]
-        //  Criteria API can be very useful here
-        return trainingRepository.findByTraineeUserUsername(username).stream()
-                .filter(t -> fromDate == null || !t.getDate().before(fromDate))
-                .filter(t -> toDate == null || !t.getDate().after(toDate))
-                .filter(t -> trainerName == null ||
-                        t.getTrainer().getUser().getUsername().equalsIgnoreCase(trainerName))
-                .filter(t -> trainingTypeName == null ||
-                        t.getTrainingType().getTrainingTypeName() == trainingTypeName)
+
+        return trainingRepository
+                .findAll(TrainingSpecification.byTraineeCriteria(
+                        username, fromDate, toDate, trainerName, trainingTypeName))
+                .stream()
                 .map(trainingMapper::toTraineeTrainingResponse)
                 .toList();
     }
