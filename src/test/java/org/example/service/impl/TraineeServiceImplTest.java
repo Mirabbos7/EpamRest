@@ -42,6 +42,8 @@ class TraineeServiceImplTest {
     @Mock private UserService userService;
     @Mock private AuthService authService;
 
+    // TODO:
+    //  Our source code is in English and comments are part of the source code
     // Реальные маpперы — покрывают маpпер-классы
     @Spy private TraineeMapperImpl traineeMapper;
     @Spy private TrainerMapperImpl trainerMapper;
