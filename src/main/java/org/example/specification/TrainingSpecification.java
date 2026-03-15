@@ -88,18 +88,4 @@ public class TrainingSpecification {
                 .and(toDate(to))
                 .and(hasTraineeUsername(traineeUsername));
     }
-
-    public static Specification<Training> forTraineesNextWeek(List<Long> traineeIds) {
-        LocalDate nextMonday = LocalDate.now()
-                .with(TemporalAdjusters.next(DayOfWeek.MONDAY));
-        LocalDate nextSunday = nextMonday.plusDays(6);
-
-        Date from = Date.from(nextMonday.atStartOfDay(ZoneId.systemDefault()).toInstant());
-        Date to = Date.from(nextSunday.atStartOfDay(ZoneId.systemDefault()).toInstant());
-
-        return Specification
-                .where(hasTraineeIds(traineeIds))
-                .and(fromDate(from))
-                .and(toDate(to));
-    }
 }

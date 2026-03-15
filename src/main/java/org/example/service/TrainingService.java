@@ -2,6 +2,7 @@ package org.example.service;
 
 import org.example.dto.request.TrainingDtoRequest;
 import org.example.dto.response.TrainingResponse;
+import org.example.dto.response.TrainingTypeResponse;
 import org.example.entity.TrainingType;
 
 import java.util.Date;
@@ -26,4 +27,7 @@ public interface TrainingService {
                                                String traineeUsername);
 
     List<TrainingResponse> getTrainingsForTraineesNextWeek(List<Long> traineeIds);
+
+    List<TrainingTypeResponse> getTrainingTypes();
+
 }

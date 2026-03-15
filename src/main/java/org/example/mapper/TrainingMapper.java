@@ -1,6 +1,5 @@
 package org.example.mapper;
 
-import org.example.dto.request.TrainingDtoRequest;
 import org.example.dto.response.TrainingResponse;
 import org.example.entity.Training;
 import org.mapstruct.Mapper;

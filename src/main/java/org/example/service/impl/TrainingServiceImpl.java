@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.dto.request.TrainingDtoRequest;
 import org.example.dto.response.TrainingResponse;
+import org.example.dto.response.TrainingTypeResponse;
 import org.example.entity.*;
 import org.example.mapper.TrainingMapper;
+import org.example.mapper.TrainingTypeMapper;
 import org.example.repository.*;
 import org.example.service.TrainingService;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ public class TrainingServiceImpl implements TrainingService {
     private final TraineeRepository traineeRepository;
     private final TrainingTypeRepository trainingTypeRepository;
     private final TrainingMapper trainingMapper;
+    private final TrainingTypeMapper trainingTypeMapper;
 
     @Override
     @Transactional
@@ -106,6 +109,15 @@ public class TrainingServiceImpl implements TrainingService {
                 .filter(t -> traineeIds.contains(t.getTrainee().getId()))
                 .filter(t -> !t.getDate().before(now) && !t.getDate().after(nextWeek))
                 .map(trainingMapper::toTraineeTrainingResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TrainingTypeResponse> getTrainingTypes() {
+        return trainingTypeRepository.findAll()
+                .stream()
+                .map(trainingTypeMapper::toResponse)
                 .toList();
     }
 }

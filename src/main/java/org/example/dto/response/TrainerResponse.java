@@ -1,7 +1,6 @@
 package org.example.dto.response;
 
 import org.example.entity.TrainingType;
-import org.example.mapper.TrainingTypeMapper;
 
 import java.util.List;
 

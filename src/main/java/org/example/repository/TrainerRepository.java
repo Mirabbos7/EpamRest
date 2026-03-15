@@ -1,6 +1,5 @@
 package org.example.repository;
 
-import org.example.entity.Trainee;
 import org.example.entity.Trainer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

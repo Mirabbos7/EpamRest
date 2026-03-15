@@ -1,15 +1,12 @@
 package org.example.mapper;
 
 import org.example.dto.request.TraineeDtoRequest;
-import org.example.dto.request.UpdateTraineeRequest;
 import org.example.dto.response.TraineeResponse;
-import org.example.dto.response.TraineeShortResponse;
 import org.example.dto.response.TrainerShortResponse;
 import org.example.entity.Trainee;
 import org.example.entity.Trainer;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface TraineeMapper {
