@@ -26,23 +26,10 @@ public interface TraineeMapper {
     @Mapping(target = "trainers",   source = "trainers")
     TraineeResponse toResponse(Trainee trainee);
 
-    @Mapping(target = "username",  source = "user.username")
-    @Mapping(target = "firstName", source = "user.firstName")
-    @Mapping(target = "lastName",  source = "user.lastName")
-    TraineeShortResponse toShortResponse(Trainee trainee);
     @Mapping(target = "username",       source = "user.username")
     @Mapping(target = "firstName",      source = "user.firstName")
     @Mapping(target = "lastName",       source = "user.lastName")
     @Mapping(target = "specialization", source = "trainingType.trainingTypeName")
     TrainerShortResponse trainerToShortResponse(Trainer trainer);
 
-    @Mapping(target = "id",               ignore = true)
-    @Mapping(target = "user.username",    ignore = true)
-    @Mapping(target = "user.password",    ignore = true)
-    @Mapping(target = "user.firstName",   source = "firstName")
-    @Mapping(target = "user.lastName",    source = "lastName")
-    @Mapping(target = "user.active",      source = "isActive")
-    @Mapping(target = "trainers",         ignore = true)
-    @Mapping(target = "trainings",        ignore = true)
-    void updateEntity(UpdateTraineeRequest request, @MappingTarget Trainee trainee);
 }

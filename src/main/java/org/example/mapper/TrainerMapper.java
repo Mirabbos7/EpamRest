@@ -12,13 +12,6 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring")
 public interface TrainerMapper {
 
-    @Mapping(target = "id",           ignore = true)
-    @Mapping(target = "user",         ignore = true)
-    @Mapping(target = "trainingType", ignore = true)
-    @Mapping(target = "trainees",     ignore = true)
-    @Mapping(target = "trainings",    ignore = true)
-    Trainer toEntity(TrainerDtoRequest request);
-
     @Mapping(target = "username",       source = "user.username")
     @Mapping(target = "firstName",      source = "user.firstName")
     @Mapping(target = "lastName",       source = "user.lastName")
@@ -33,14 +26,4 @@ public interface TrainerMapper {
     @Mapping(target = "specialization", source = "trainingType.trainingTypeName")
     TrainerShortResponse toShortResponse(Trainer trainer);
 
-    @Mapping(target = "id",             ignore = true)
-    @Mapping(target = "user.username",  ignore = true)
-    @Mapping(target = "user.password",  ignore = true)
-    @Mapping(target = "user.firstName", source = "firstName")
-    @Mapping(target = "user.lastName",  source = "lastName")
-    @Mapping(target = "user.active",    source = "isActive")
-    @Mapping(target = "trainingType",   ignore = true)
-    @Mapping(target = "trainees",       ignore = true)
-    @Mapping(target = "trainings",      ignore = true)
-    void updateEntity(UpdateTrainerRequest request, @MappingTarget Trainer trainer);
-}
+   }
