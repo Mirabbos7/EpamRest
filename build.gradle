@@ -42,7 +42,8 @@ dependencies {
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '4.0.4'
+    implementation group: 'io.micrometer', name: 'micrometer-registry-prometheus', version: '1.16.4'
 }
 
 tasks.named('test') {
