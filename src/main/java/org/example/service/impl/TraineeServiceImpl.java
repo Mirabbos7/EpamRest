@@ -11,6 +11,7 @@ import org.example.entity.User;
 import org.example.mapper.TraineeMapper;
 import org.example.mapper.TrainerMapper;
 import org.example.mapper.TrainingMapper;
+import org.example.metrics.TrainingMetrics;
 import org.example.repository.TraineeRepository;
 import org.example.repository.TrainerRepository;
 import org.example.repository.TrainingRepository;
@@ -38,6 +39,7 @@ public class TraineeServiceImpl implements TraineeService {
     private final TraineeMapper traineeMapper;
     private final TrainerMapper trainerMapper;
     private final TrainingMapper trainingMapper;
+    private final TrainingMetrics trainingMetrics;
 
     @Override
     @Transactional
@@ -48,6 +50,7 @@ public class TraineeServiceImpl implements TraineeService {
         trainee.setUser(user);
 
         traineeRepository.save(trainee);
+        trainingMetrics.incrementTraineeRegistration();
         log.info("Registered trainee: username={}", user.getUsername());
         return new RegistrationResponse(user.getUsername(), user.getPassword());
     }
@@ -60,8 +63,7 @@ public class TraineeServiceImpl implements TraineeService {
     @Override
     @Transactional(readOnly = true)
     public Optional<TraineeResponse> findByUsername(String username, String password) {
-        authService.authenticate(username, password,
-                traineeRepository::existsByUserUsernameAndUserPassword);
+        authenticate(username, password);
         return traineeRepository.findByUserUsername(username)
                 .map(traineeMapper::toResponse);
     }
@@ -69,8 +71,7 @@ public class TraineeServiceImpl implements TraineeService {
     @Override
     @Transactional
     public void changePassword(ChangePasswordRequest request) {
-        authService.authenticate(request.username(), request.oldPassword(),
-                traineeRepository::existsByUserUsernameAndUserPassword);
+        authenticate(request.username(), request.oldPassword());
 
         Trainee trainee = getTraineeByUsername(request.username());
         trainee.getUser().setPassword(request.newPassword());
@@ -81,8 +82,7 @@ public class TraineeServiceImpl implements TraineeService {
     @Override
     @Transactional
     public TraineeResponse update(String username, String password, UpdateTraineeRequest request) {
-        authService.authenticate(username, password,
-                traineeRepository::existsByUserUsernameAndUserPassword);
+        authenticate(username, password);
 
         Trainee trainee = getTraineeByUsername(request.username());
 
@@ -100,8 +100,7 @@ public class TraineeServiceImpl implements TraineeService {
     @Override
     @Transactional
     public void setActive(String username, String password, boolean active) {
-        authService.authenticate(username, password,
-                traineeRepository::existsByUserUsernameAndUserPassword);
+        authenticate(username, password);
 
         Trainee trainee = getTraineeByUsername(username);
         trainee.getUser().setActive(active);
@@ -112,8 +111,7 @@ public class TraineeServiceImpl implements TraineeService {
     @Override
     @Transactional
     public void delete(String username, String password) {
-        authService.authenticate(username, password,
-                traineeRepository::existsByUserUsernameAndUserPassword);
+        authenticate(username, password);
         Trainee trainee = getTraineeByUsername(username);
         traineeRepository.delete(trainee);
         log.info("Deleted trainee: username={}", username);
@@ -127,8 +125,7 @@ public class TraineeServiceImpl implements TraineeService {
                                                Date toDate,
                                                String trainerName,
                                                TrainingType.TrainingTypeName trainingTypeName) {
-        authService.authenticate(username, password,
-                traineeRepository::existsByUserUsernameAndUserPassword);
+        authenticate(username, password);
 
         return trainingRepository
                 .findAll(TrainingSpecification.byTraineeCriteria(
@@ -141,8 +138,7 @@ public class TraineeServiceImpl implements TraineeService {
     @Override
     @Transactional(readOnly = true)
     public List<TrainerShortResponse> getUnassignedTrainers(String username, String password) {
-        authService.authenticate(username, password,
-                traineeRepository::existsByUserUsernameAndUserPassword);
+        authenticate(username, password);
         Trainee trainee = getTraineeByUsername(username);
         List<Long> assignedIds = trainee.getTrainers().stream()
                 .map(Trainer::getId)
@@ -159,8 +155,7 @@ public class TraineeServiceImpl implements TraineeService {
     public TraineeResponse updateTrainers(String authUsername,
                                           String authPassword,
                                           UpdateTraineeTrainersRequest request) {
-        authService.authenticate(authUsername, authPassword,
-                traineeRepository::existsByUserUsernameAndUserPassword);
+        authenticate(authUsername, authPassword);
 
         Trainee trainee = getTraineeByUsername(request.username());
         List<Trainer> trainers = trainerRepository
@@ -168,6 +163,16 @@ public class TraineeServiceImpl implements TraineeService {
         trainee.setTrainers(trainers);
 
         return traineeMapper.toResponse(traineeRepository.save(trainee));
+    }
+
+    private void authenticate(String username, String password) {
+        try {
+            authService.authenticate(username, password,
+                    traineeRepository::existsByUserUsernameAndUserPassword);
+        } catch (SecurityException e) {
+            trainingMetrics.incrementAuthFailure();
+            throw e;
+        }
     }
 
     private Trainee getTraineeByUsername(String username) {

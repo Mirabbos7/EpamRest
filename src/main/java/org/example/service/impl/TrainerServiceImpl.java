@@ -9,6 +9,7 @@ import org.example.entity.TrainingType;
 import org.example.entity.User;
 import org.example.mapper.TrainerMapper;
 import org.example.mapper.TrainingMapper;
+import org.example.metrics.TrainingMetrics;
 import org.example.repository.TrainerRepository;
 import org.example.repository.TrainingRepository;
 import org.example.repository.TrainingTypeRepository;
@@ -35,6 +36,7 @@ public class TrainerServiceImpl implements TrainerService {
     private final AuthService authService;
     private final TrainerMapper trainerMapper;
     private final TrainingMapper trainingMapper;
+    private final TrainingMetrics trainingMetrics;
 
     @Override
     @Transactional
@@ -51,6 +53,7 @@ public class TrainerServiceImpl implements TrainerService {
         trainer.setTrainingType(trainingType);
 
         trainerRepository.save(trainer);
+        trainingMetrics.incrementTrainerRegistration();
         log.info("Registered trainer: username={}", user.getUsername());
         return new RegistrationResponse(user.getUsername(), user.getPassword());
     }
@@ -63,8 +66,7 @@ public class TrainerServiceImpl implements TrainerService {
     @Override
     @Transactional(readOnly = true)
     public Optional<TrainerResponse> findByUsername(String username, String password) {
-        authService.authenticate(username, password,
-                trainerRepository::existsByUserUsernameAndUserPassword);
+        authenticate(username, password);
         return trainerRepository.findByUserUsername(username)
                 .map(trainerMapper::toResponse);
     }
@@ -72,8 +74,7 @@ public class TrainerServiceImpl implements TrainerService {
     @Override
     @Transactional
     public void changePassword(ChangePasswordRequest request) {
-        authService.authenticate(request.username(), request.oldPassword(),
-                trainerRepository::existsByUserUsernameAndUserPassword);
+        authenticate(request.username(), request.oldPassword());
 
         Trainer trainer = getTrainerByUsername(request.username());
         trainer.getUser().setPassword(request.newPassword());
@@ -84,8 +85,7 @@ public class TrainerServiceImpl implements TrainerService {
     @Override
     @Transactional
     public TrainerResponse update(String username, String password, UpdateTrainerRequest request) {
-        authService.authenticate(username, password,
-                trainerRepository::existsByUserUsernameAndUserPassword);
+        authenticate(username, password);
 
         Trainer trainer = getTrainerByUsername(request.username());
         User user = trainer.getUser();
@@ -99,8 +99,7 @@ public class TrainerServiceImpl implements TrainerService {
     @Override
     @Transactional
     public void setActive(String username, String password, boolean active) {
-        authService.authenticate(username, password,
-                trainerRepository::existsByUserUsernameAndUserPassword);
+        authenticate(username, password);
 
         Trainer trainer = getTrainerByUsername(username);
         trainer.getUser().setActive(active);
@@ -115,8 +114,7 @@ public class TrainerServiceImpl implements TrainerService {
                                                Date fromDate,
                                                Date toDate,
                                                String traineeName) {
-        authService.authenticate(username, password,
-                trainerRepository::existsByUserUsernameAndUserPassword);
+        authenticate(username, password);
 
         return trainingRepository
                 .findAll(TrainingSpecification.byTrainerCriteria(
@@ -124,6 +122,16 @@ public class TrainerServiceImpl implements TrainerService {
                 .stream()
                 .map(trainingMapper::toTrainerTrainingResponse)
                 .toList();
+    }
+
+    private void authenticate(String username, String password) {
+        try {
+            authService.authenticate(username, password,
+                    trainerRepository::existsByUserUsernameAndUserPassword);
+        } catch (SecurityException e) {
+            trainingMetrics.incrementAuthFailure();
+            throw e;
+        }
     }
 
     private Trainer getTrainerByUsername(String username) {
