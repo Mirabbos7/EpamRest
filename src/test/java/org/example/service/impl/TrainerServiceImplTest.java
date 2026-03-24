@@ -9,6 +9,7 @@ import org.example.dto.response.TrainingResponse;
 import org.example.entity.*;
 import org.example.mapper.TrainerMapperImpl;
 import org.example.mapper.TrainingMapperImpl;
+import org.example.metrics.TrainingMetrics;
 import org.example.repository.TrainerRepository;
 import org.example.repository.TrainingRepository;
 import org.example.repository.TrainingTypeRepository;
@@ -40,6 +41,9 @@ class TrainerServiceImplTest {
     @Mock private TrainingTypeRepository trainingTypeRepository;
     @Mock private UserService userService;
     @Mock private AuthService authService;
+
+    @Mock
+    private TrainingMetrics trainingMetrics;
 
     @Spy private TrainerMapperImpl trainerMapper;
     @Spy private TrainingMapperImpl trainingMapper;
@@ -162,7 +166,12 @@ class TrainerServiceImplTest {
 
         assertThat(result.username()).isEqualTo("jane.smith");
         assertThat(result.password()).isEqualTo("pass123");
+
+        verify(userService).createUser("Jane", "Smith");
+        verify(trainingTypeRepository)
+                .findByTrainingTypeName(TrainingType.TrainingTypeName.CARDIO);
         verify(trainerRepository).save(any());
+        verify(trainingMetrics).incrementTrainerRegistration();
     }
 
     @Test

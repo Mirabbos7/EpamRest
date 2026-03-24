@@ -12,6 +12,7 @@ import org.example.entity.*;
 import org.example.mapper.TraineeMapperImpl;
 import org.example.mapper.TrainerMapperImpl;
 import org.example.mapper.TrainingMapperImpl;
+import org.example.metrics.TrainingMetrics;
 import org.example.repository.TraineeRepository;
 import org.example.repository.TrainerRepository;
 import org.example.repository.TrainingRepository;
@@ -43,9 +44,8 @@ class TraineeServiceImplTest {
     @Mock private UserService userService;
     @Mock private AuthService authService;
 
-    // TODO:
-    //  Our source code is in English and comments are part of the source code
-    // Реальные маpперы — покрывают маpпер-классы
+    @Mock
+    private TrainingMetrics trainingMetrics;
     @Spy private TraineeMapperImpl traineeMapper;
     @Spy private TrainerMapperImpl trainerMapper;
     @Spy private TrainingMapperImpl trainingMapper;
@@ -204,14 +204,17 @@ class TraineeServiceImplTest {
         TraineeDtoRequest request = new TraineeDtoRequest("John", "Doe", null, null);
 
         when(userService.createUser("John", "Doe")).thenReturn(user);
+        when(traineeMapper.toEntity(request)).thenReturn(trainee);
         when(traineeRepository.save(any())).thenReturn(trainee);
 
         RegistrationResponse result = traineeService.create(request);
-
         assertThat(result.username()).isEqualTo("john.doe");
         assertThat(result.password()).isEqualTo("pass123");
+        verify(userService).createUser("John", "Doe");
         verify(traineeMapper).toEntity(request);
-        verify(traineeRepository).save(any());
+        verify(traineeRepository).save(trainee);
+
+        verify(trainingMetrics).incrementTraineeRegistration();
     }
 
     @Test
