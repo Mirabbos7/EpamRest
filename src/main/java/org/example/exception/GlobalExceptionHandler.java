@@ -5,9 +5,12 @@ import org.example.dto.response.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
@@ -50,5 +53,17 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.joining(", "));
 
         return new ErrorResponse(message, 400, LocalDateTime.now());
+    }
+
+    @ExceptionHandler({
+            MissingRequestHeaderException.class,
+            MethodArgumentTypeMismatchException.class,
+            MissingServletRequestParameterException.class
+    })
+    public ResponseEntity<ErrorResponse> handleBadRequestExceptions(Exception ex) {
+        log.warn("Bad request: {}", ex.getMessage());
+        return ResponseEntity
+                .badRequest()
+                .body(new ErrorResponse(ex.getMessage(), 400, LocalDateTime.now()));
     }
 }
