@@ -37,98 +37,75 @@ public class TraineeController {
     @Operation(summary = "Get Trainee profile by username")
     @GetMapping("/{username}")
     public ResponseEntity<TraineeResponse> getProfile(
-            @PathVariable String username,
-            @RequestHeader("username") String authUsername,
-            @RequestHeader("password") String authPassword) {
-        // TODO:
-        //  [Optional]
-        //  Given that most of your endpoints expect same custom username header, can you find a way to log API calls in more
-        //  centralized manner? That kind of solution should take HTTP verbs and paths dynamically.
+            @PathVariable String username) {
         log.info("GET /api/trainees/{}", username);
-        return traineeService.findByUsername(authUsername, authPassword)
+        return traineeService.findByUsername(username)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @Operation(summary = "Update Trainee profile")
-    @PutMapping
+    @PutMapping("/{username}")
     public ResponseEntity<TraineeResponse> update(
-            @RequestHeader("username") String authUsername,
-            @RequestHeader("password") String authPassword,
+            @PathVariable String username,
             @Valid @RequestBody UpdateTraineeRequest request) {
-        log.info("PUT /api/trainees username={}", request.username());
-        TraineeResponse response = traineeService.update(authUsername, authPassword, request);
+        log.info("PUT /api/trainees/{}", username);
+        TraineeResponse response = traineeService.update(username, request);
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Delete Trainee by username")
     @DeleteMapping("/{username}")
     public ResponseEntity<Void> delete(
-            @PathVariable String username,
-            @RequestHeader("password") String authPassword) {
-        traineeService.delete(username, authPassword);
-        return ResponseEntity.ok().build();
+            @PathVariable String username) {
+        log.info("DELETE /api/trainees/{}", username);
+        traineeService.delete(username);
+        return ResponseEntity.noContent().build();
     }
 
-    // TODO:
-    //  [Optional]
-    //  Can be more RESTful endpoint path: /{username}/trainers/unassigned
     @Operation(summary = "Get active trainers not assigned to trainee")
     @GetMapping("/{username}/trainers/unassigned")
     public ResponseEntity<List<TrainerShortResponse>> getUnassignedTrainers(
-            @PathVariable String username,
-            @RequestHeader("username") String authUsername,
-            @RequestHeader("password") String authPassword) {
-        log.info("GET /api/trainees/{}/unassigned-trainers", username);
-        List<TrainerShortResponse> trainers =
-                traineeService.getUnassignedTrainers(authUsername, authPassword);
+            @PathVariable String username) {
+        log.info("GET /api/trainees/{}/trainers/unassigned", username);
+        List<TrainerShortResponse> trainers = traineeService.getUnassignedTrainers(username);
         return ResponseEntity.ok(trainers);
     }
 
     @Operation(summary = "Update Trainee's trainer list")
-    @PutMapping("/trainers")
+    @PutMapping("/{username}/trainers")
     public ResponseEntity<TraineeResponse> updateTrainers(
-            @RequestHeader("username") String authUsername,
-            @RequestHeader("password") String authPassword,
+            @PathVariable String username,
             @Valid @RequestBody UpdateTraineeTrainersRequest request) {
-        log.info("PUT /api/trainees/trainers traineeUsername={}", request.username());
-        TraineeResponse response =
-                traineeService.updateTrainers(authUsername, authPassword, request);
+        log.info("PUT /api/trainees/{}/trainers", username);
+        TraineeResponse response = traineeService.updateTrainers(username, request);
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Get trainings for a Trainee")
     @GetMapping("/{username}/trainings")
     public ResponseEntity<List<TrainingResponse>> getTrainings(
             @PathVariable String username,
-            @RequestHeader("username") String authUsername,
-            @RequestHeader("password") String authPassword,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date fromDate,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date toDate,
             @RequestParam(required = false) String trainerName,
             @RequestParam(required = false) TrainingType.TrainingTypeName trainingType) {
-
+        log.info("GET /api/trainees/{}/trainings", username);
         if (fromDate != null && toDate != null && fromDate.after(toDate)) {
             throw new IllegalArgumentException("fromDate must not be after toDate");
         }
-
         List<TrainingResponse> trainings = traineeService.getTrainings(
-                authUsername, authPassword, fromDate, toDate, trainerName, trainingType);
+                username, fromDate, toDate, trainerName, trainingType);
         return ResponseEntity.ok(trainings);
     }
 
     @Operation(summary = "Activate or deactivate Trainee")
-    @PatchMapping("/active")
+    @PatchMapping("/{username}/active")
     public ResponseEntity<Void> setActive(
-            @RequestHeader("username") String authUsername,
-            @RequestHeader("password") String authPassword,
-            @RequestParam String username,
+            @PathVariable String username,
             @RequestParam boolean isActive) {
-        // TODO:
-        //  [Optional]
-        //  Your approach to pass an explicit flag is totally fine and I would even say it is cleaner and safer.
-        //  However, if we stick to the task 'Activate/De-activate Trainee/Trainer profile not idempotent action',
-        //  it is more expected to have a toggle action without an isActive param which does smth like active=!active
-        log.info("PATCH /api/trainees/active username={} isActive={}", username, isActive);
-        traineeService.setActive(authUsername, authPassword, isActive);
-        return ResponseEntity.ok().build();
+        log.info("PATCH /api/trainees/{}/active isActive={}", username, isActive);
+        traineeService.setActive(username, isActive);
+        return ResponseEntity.noContent().build();
     }
 }

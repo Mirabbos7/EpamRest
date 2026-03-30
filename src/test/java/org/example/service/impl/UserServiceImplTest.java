@@ -1,6 +1,7 @@
 package org.example.service.impl;
 
 import org.example.entity.User;
+import org.example.enums.Role;
 import org.example.repository.UserRepository;
 import org.example.utils.PasswordGenerator;
 import org.example.utils.UsernameGenerator;
@@ -9,11 +10,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
@@ -21,6 +24,7 @@ class UserServiceImplTest {
     @Mock private UserRepository userRepository;
     @Mock private UsernameGenerator usernameGenerator;
     @Mock private PasswordGenerator passwordGenerator;
+    @Mock private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private UserServiceImpl userService;
@@ -30,16 +34,31 @@ class UserServiceImplTest {
         when(usernameGenerator.generateUsername(eq("John"), eq("Doe"), any()))
                 .thenReturn("John.Doe");
         when(passwordGenerator.generatePassword()).thenReturn("abc123XYZ");
+        when(passwordEncoder.encode("abc123XYZ")).thenReturn("encoded_abc123XYZ");
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
         User result = userService.createUser("John", "Doe");
 
-        assertEquals("John.Doe", result.getUsername());
-        assertEquals("abc123XYZ", result.getPassword());
-        assertEquals("John", result.getFirstName());
-        assertEquals("Doe", result.getLastName());
-        assertTrue(result.isActive());
+        assertThat(result.getUsername()).isEqualTo("John.Doe");
+        assertThat(result.getPassword()).isEqualTo("encoded_abc123XYZ");
+        assertThat(result.getFirstName()).isEqualTo("John");
+        assertThat(result.getLastName()).isEqualTo("Doe");
+        assertThat(result.isActive()).isTrue();
+        assertThat(result.getRole()).isEqualTo(Role.ROLE_USER);
         verify(userRepository).save(any(User.class));
+    }
+
+    @Test
+    void createUser_shouldEncodePassword() {
+        when(usernameGenerator.generateUsername(eq("John"), eq("Doe"), any()))
+                .thenReturn("John.Doe");
+        when(passwordGenerator.generatePassword()).thenReturn("abc123XYZ");
+        when(passwordEncoder.encode("abc123XYZ")).thenReturn("encoded_abc123XYZ");
+        when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
+
+        userService.createUser("John", "Doe");
+
+        verify(passwordEncoder).encode("abc123XYZ");
     }
 
     @Test
@@ -47,11 +66,12 @@ class UserServiceImplTest {
         when(usernameGenerator.generateUsername(eq("Jane"), eq("Smith"), any()))
                 .thenReturn("Jane.Smith");
         when(passwordGenerator.generatePassword()).thenReturn("pass999");
+        when(passwordEncoder.encode("pass999")).thenReturn("encoded_pass999");
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
         User result = userService.createUser("Jane", "Smith");
 
-        assertTrue(result.isActive());
+        assertThat(result.isActive()).isTrue();
     }
 
     @Test
@@ -59,6 +79,7 @@ class UserServiceImplTest {
         when(usernameGenerator.generateUsername(eq("John"), eq("Doe"), any()))
                 .thenReturn("John.Doe");
         when(passwordGenerator.generatePassword()).thenReturn("pass");
+        when(passwordEncoder.encode("pass")).thenReturn("encoded_pass");
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
         userService.createUser("John", "Doe");
@@ -71,6 +92,7 @@ class UserServiceImplTest {
         when(usernameGenerator.generateUsername(eq("John"), eq("Doe"), any()))
                 .thenReturn("John.Doe");
         when(passwordGenerator.generatePassword()).thenReturn("pass");
+        when(passwordEncoder.encode("pass")).thenReturn("encoded_pass");
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
         userService.createUser("John", "Doe");
@@ -83,10 +105,11 @@ class UserServiceImplTest {
         when(usernameGenerator.generateUsername(eq("John"), eq("Doe"), any()))
                 .thenReturn("John.Doe1");
         when(passwordGenerator.generatePassword()).thenReturn("pass");
+        when(passwordEncoder.encode("pass")).thenReturn("encoded_pass");
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
         User result = userService.createUser("John", "Doe");
 
-        assertEquals("John.Doe1", result.getUsername());
+        assertThat(result.getUsername()).isEqualTo("John.Doe1");
     }
 }

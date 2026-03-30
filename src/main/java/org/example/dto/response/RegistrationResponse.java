@@ -2,5 +2,6 @@ package org.example.dto.response;
 
 public record RegistrationResponse(
         String username,
-        String password
+        String password,
+        String token
 ) {}

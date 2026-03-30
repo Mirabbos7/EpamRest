@@ -13,17 +13,14 @@ public interface TrainerService {
 
     boolean matchUsernameAndPassword(String username, String password);
 
-    Optional<TrainerResponse> findByUsername(String username, String password);
+    Optional<TrainerResponse> findByUsername(String username);
 
     void changePassword(ChangePasswordRequest request);
 
-    TrainerResponse update(String username, String password, UpdateTrainerRequest updateTraineeRequest);
+    TrainerResponse update(String username, UpdateTrainerRequest request);
 
-    void setActive(String username, String password, boolean active);
+    void setActive(String username, boolean active);
 
-    List<TrainingResponse> getTrainings(String username,
-                                        String password,
-                                        Date fromDate,
-                                        Date toDate,
-                                        String traineeName);
+    List<TrainingResponse> getTrainings(String username, Date fromDate, Date toDate, String traineeName);
+
 }

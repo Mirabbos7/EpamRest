@@ -13,10 +13,12 @@ import org.example.metrics.TrainingMetrics;
 import org.example.repository.TrainerRepository;
 import org.example.repository.TrainingRepository;
 import org.example.repository.TrainingTypeRepository;
+import org.example.security.service.JwtTokenService;
 import org.example.service.AuthService;
 import org.example.service.TrainerService;
 import org.example.service.UserService;
 import org.example.specification.TrainingSpecification;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,10 +35,12 @@ public class TrainerServiceImpl implements TrainerService {
     private final TrainingRepository trainingRepository;
     private final TrainingTypeRepository trainingTypeRepository;
     private final UserService userService;
-    private final AuthService authService;
     private final TrainerMapper trainerMapper;
     private final TrainingMapper trainingMapper;
     private final TrainingMetrics trainingMetrics;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtTokenService jwtTokenService;
+
 
     @Override
     @Transactional
@@ -45,17 +49,21 @@ public class TrainerServiceImpl implements TrainerService {
 
         TrainingType trainingType = trainingTypeRepository
                 .findByTrainingTypeName(request.specialization())
-                .orElseThrow(() -> new RuntimeException(
-                        "TrainingType not found: " + request.specialization()));
+                .orElseThrow(() -> {
+                    log.error("TrainingType not found: {}", request.specialization());
+                    return new RuntimeException("TrainingType not found: " + request.specialization());
+                });
 
         Trainer trainer = new Trainer();
         trainer.setUser(user);
         trainer.setTrainingType(trainingType);
-
         trainerRepository.save(trainer);
+
         trainingMetrics.incrementTrainerRegistration();
+
+        String token = jwtTokenService.generateToken(user);
         log.info("Registered trainer: username={}", user.getUsername());
-        return new RegistrationResponse(user.getUsername(), user.getPassword());
+        return new RegistrationResponse(user.getUsername(), user.getPassword(), token);
     }
 
     @Override
@@ -65,77 +73,72 @@ public class TrainerServiceImpl implements TrainerService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<TrainerResponse> findByUsername(String username, String password) {
-        authenticate(username, password);
-        return trainerRepository.findByUserUsername(username)
+    public Optional<TrainerResponse> findByUsername(String username) {
+        log.info("Fetching trainer profile: username={}", username);
+        Optional<TrainerResponse> result = trainerRepository.findByUserUsername(username)
                 .map(trainerMapper::toResponse);
+        if (result.isEmpty()) {
+            log.warn("Trainer not found: username={}", username);
+        } else {
+            log.info("Trainer profile fetched: username={}", username);
+        }
+        return result;
     }
 
     @Override
     @Transactional
     public void changePassword(ChangePasswordRequest request) {
-        authenticate(request.username(), request.oldPassword());
-
+        log.info("Changing password for trainer: username={}", request.username());
         Trainer trainer = getTrainerByUsername(request.username());
-        trainer.getUser().setPassword(request.newPassword());
+        trainer.getUser().setPassword(passwordEncoder.encode(request.newPassword()));
         trainerRepository.save(trainer);
-        log.info("Password changed for trainer: username={}", request.username());
+        log.info("Password changed successfully for trainer: username={}", request.username());
     }
 
     @Override
     @Transactional
-    public TrainerResponse update(String username, String password, UpdateTrainerRequest request) {
-        authenticate(username, password);
-
-        Trainer trainer = getTrainerByUsername(request.username());
+    public TrainerResponse update(String username, UpdateTrainerRequest request) {
+        log.info("Updating trainer profile: username={}", username);
+        Trainer trainer = getTrainerByUsername(username);
         User user = trainer.getUser();
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
         user.setActive(request.isActive());
-
-        return trainerMapper.toResponse(trainerRepository.save(trainer));
+        TrainerResponse response = trainerMapper.toResponse(trainerRepository.save(trainer));
+        log.info("Trainer profile updated: username={}", username);
+        return response;
     }
 
     @Override
     @Transactional
-    public void setActive(String username, String password, boolean active) {
-        authenticate(username, password);
-
+    public void setActive(String username, boolean active) {
+        log.info("Setting trainer active={} for username={}", active, username);
         Trainer trainer = getTrainerByUsername(username);
         trainer.getUser().setActive(active);
         trainerRepository.save(trainer);
-        log.info("Trainer active={} for username={}", active, username);
+        log.info("Trainer active status updated: username={}, active={}", username, active);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<TrainingResponse> getTrainings(String username,
-                                               String password,
-                                               Date fromDate,
-                                               Date toDate,
-                                               String traineeName) {
-        authenticate(username, password);
-
-        return trainingRepository
-                .findAll(TrainingSpecification.byTrainerCriteria(
-                        username, fromDate, toDate, traineeName))
+    public List<TrainingResponse> getTrainings(String username, Date fromDate,
+                                               Date toDate, String traineeName) {
+        log.info("Fetching trainings for trainer: username={}, fromDate={}, toDate={}, traineeName={}",
+                username, fromDate, toDate, traineeName);
+        List<TrainingResponse> result = trainingRepository
+                .findAll(TrainingSpecification.byTrainerCriteria(username, fromDate, toDate, traineeName))
                 .stream()
                 .map(trainingMapper::toTrainerTrainingResponse)
                 .toList();
-    }
-
-    private void authenticate(String username, String password) {
-        try {
-            authService.authenticate(username, password,
-                    trainerRepository::existsByUserUsernameAndUserPassword);
-        } catch (SecurityException e) {
-            trainingMetrics.incrementAuthFailure();
-            throw e;
-        }
+        log.info("Found {} trainings for trainer: username={}", result.size(), username);
+        return result;
     }
 
     private Trainer getTrainerByUsername(String username) {
         return trainerRepository.findByUserUsername(username)
-                .orElseThrow(() -> new RuntimeException("Trainer not found: " + username));
+                .orElseThrow(() -> {
+                    log.error("Trainer not found: username={}", username);
+                    return new RuntimeException("Trainer not found: " + username);
+                });
     }
 }

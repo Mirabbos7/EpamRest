@@ -16,7 +16,7 @@ import org.example.metrics.TrainingMetrics;
 import org.example.repository.TraineeRepository;
 import org.example.repository.TrainerRepository;
 import org.example.repository.TrainingRepository;
-import org.example.service.AuthService;
+import org.example.security.service.JwtTokenService;
 import org.example.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,12 +26,14 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -42,10 +44,10 @@ class TraineeServiceImplTest {
     @Mock private TrainerRepository trainerRepository;
     @Mock private TrainingRepository trainingRepository;
     @Mock private UserService userService;
-    @Mock private AuthService authService;
+    @Mock private TrainingMetrics trainingMetrics;
+    @Mock private JwtTokenService jwtTokenService;
+    @Mock private PasswordEncoder passwordEncoder;
 
-    @Mock
-    private TrainingMetrics trainingMetrics;
     @Spy private TraineeMapperImpl traineeMapper;
     @Spy private TrainerMapperImpl trainerMapper;
     @Spy private TrainingMapperImpl trainingMapper;
@@ -70,13 +72,32 @@ class TraineeServiceImplTest {
         trainee.setUser(user);
         trainee.setTrainers(List.of());
     }
+    
+    @Test
+    void create_shouldSaveAndReturnRegistrationResponse() {
+        TraineeDtoRequest request = new TraineeDtoRequest("John", "Doe", null, null);
+
+        when(userService.createUser("John", "Doe")).thenReturn(user);
+        when(traineeMapper.toEntity(request)).thenReturn(trainee);
+        when(traineeRepository.save(any())).thenReturn(trainee);
+        when(jwtTokenService.generateToken(user)).thenReturn("jwt.token");
+
+        RegistrationResponse result = traineeService.create(request);
+
+        assertThat(result.username()).isEqualTo("john.doe");
+        assertThat(result.token()).isEqualTo("jwt.token");
+        verify(userService).createUser("John", "Doe");
+        verify(traineeMapper).toEntity(request);
+        verify(traineeRepository).save(trainee);
+        verify(trainingMetrics).incrementTraineeRegistration();
+    }
 
     @Test
     void findByUsername_shouldReturnMappedResponse() {
         when(traineeRepository.findByUserUsername("john.doe"))
                 .thenReturn(Optional.of(trainee));
 
-        Optional<TraineeResponse> result = traineeService.findByUsername("john.doe", "pass123");
+        Optional<TraineeResponse> result = traineeService.findByUsername("john.doe");
 
         assertThat(result).isPresent();
         assertThat(result.get().username()).isEqualTo("john.doe");
@@ -91,7 +112,7 @@ class TraineeServiceImplTest {
         when(traineeRepository.findByUserUsername("john.doe"))
                 .thenReturn(Optional.empty());
 
-        Optional<TraineeResponse> result = traineeService.findByUsername("john.doe", "pass123");
+        Optional<TraineeResponse> result = traineeService.findByUsername("john.doe");
 
         assertThat(result).isEmpty();
     }
@@ -105,7 +126,7 @@ class TraineeServiceImplTest {
                 .thenReturn(Optional.of(trainee));
         when(traineeRepository.save(any())).thenReturn(trainee);
 
-        TraineeResponse result = traineeService.update("john.doe", "pass123", request);
+        TraineeResponse result = traineeService.update("john.doe", request);
 
         assertThat(result.username()).isEqualTo("john.doe");
         assertThat(result.address()).isEqualTo("Tashkent");
@@ -113,60 +134,65 @@ class TraineeServiceImplTest {
     }
 
     @Test
-    void updateTrainers_shouldReturnMappedResponse() {
-        UpdateTraineeTrainersRequest request = new UpdateTraineeTrainersRequest(
-                "john.doe", List.of("jane.smith"));
+    void update_shouldThrow_whenTraineeNotFound() {
+        UpdateTraineeRequest request = new UpdateTraineeRequest(
+                "John", "Doe", "unknown", null, null, true);
 
-        User trainerUser = new User();
-        trainerUser.setUsername("jane.smith");
-        trainerUser.setFirstName("Jane");
-        trainerUser.setLastName("Smith");
+        when(traineeRepository.findByUserUsername("unknown"))
+                .thenReturn(Optional.empty());
 
-        Trainer trainer = new Trainer();
-        trainer.setUser(trainerUser);
-
-        when(traineeRepository.findByUserUsername("john.doe"))
-                .thenReturn(Optional.of(trainee));
-        when(trainerRepository.findAllByUserUsernameIn(List.of("jane.smith")))
-                .thenReturn(List.of(trainer));
-        when(traineeRepository.save(any())).thenReturn(trainee);
-
-        TraineeResponse result = traineeService.updateTrainers("john.doe", "pass123", request);
-
-        assertThat(result.username()).isEqualTo("john.doe");
-        verify(traineeMapper).toResponse(trainee);
+        assertThatThrownBy(() -> traineeService.update("unknown", request))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Trainee not found");
     }
 
     @Test
-    void getUnassignedTrainers_shouldReturnMappedShortResponses() {
-        User trainerUser = new User();
-        trainerUser.setUsername("jane.smith");
-        trainerUser.setFirstName("Jane");
-        trainerUser.setLastName("Smith");
-        trainerUser.setActive(true);
-
-        TrainingType trainingType = new TrainingType();
-        trainingType.setTrainingTypeName(TrainingType.TrainingTypeName.CARDIO);
-
-        Trainer trainer = new Trainer();
-        trainer.setId(10L);
-        trainer.setUser(trainerUser);
-        trainer.setTrainingType(trainingType);
-
-        trainee.setTrainers(List.of()); // нет назначенных тренеров
+    void changePassword_shouldEncodeAndUpdatePassword() {
+        ChangePasswordRequest request = new ChangePasswordRequest(
+                "john.doe", "pass123", "newpass");
 
         when(traineeRepository.findByUserUsername("john.doe"))
                 .thenReturn(Optional.of(trainee));
-        when(trainerRepository.findAll()).thenReturn(List.of(trainer));
+        when(passwordEncoder.encode("newpass")).thenReturn("encoded_newpass");
+        when(traineeRepository.save(any())).thenReturn(trainee);
 
-        List<TrainerShortResponse> result =
-                traineeService.getUnassignedTrainers("john.doe", "pass123");
+        traineeService.changePassword(request);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).username()).isEqualTo("jane.smith");
-        assertThat(result.get(0).specialization())
-                .isEqualTo(TrainingType.TrainingTypeName.CARDIO);
-        verify(trainerMapper).toShortResponse(trainer);
+        assertThat(trainee.getUser().getPassword()).isEqualTo("encoded_newpass");
+        verify(passwordEncoder).encode("newpass");
+        verify(traineeRepository).save(trainee);
+    }
+
+    @Test
+    void setActive_shouldUpdateActiveStatus() {
+        when(traineeRepository.findByUserUsername("john.doe"))
+                .thenReturn(Optional.of(trainee));
+        when(traineeRepository.save(any())).thenReturn(trainee);
+
+        traineeService.setActive("john.doe", false);
+
+        assertThat(trainee.getUser().isActive()).isFalse();
+        verify(traineeRepository).save(trainee);
+    }
+
+    @Test
+    void delete_shouldDeleteTrainee() {
+        when(traineeRepository.findByUserUsername("john.doe"))
+                .thenReturn(Optional.of(trainee));
+
+        traineeService.delete("john.doe");
+
+        verify(traineeRepository).delete(trainee);
+    }
+
+    @Test
+    void delete_shouldThrow_whenTraineeNotFound() {
+        when(traineeRepository.findByUserUsername("unknown"))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> traineeService.delete("unknown"))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Trainee not found");
     }
 
     @Test
@@ -191,7 +217,7 @@ class TraineeServiceImplTest {
                 .thenReturn(List.of(training));
 
         List<TrainingResponse> result = traineeService.getTrainings(
-                "john.doe", "pass123", null, null, null, null);
+                "john.doe", null, null, null, null);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).trainingName()).isEqualTo("Morning Run");
@@ -200,77 +226,99 @@ class TraineeServiceImplTest {
     }
 
     @Test
-    void create_shouldSaveAndReturnRegistrationResponse() {
-        TraineeDtoRequest request = new TraineeDtoRequest("John", "Doe", null, null);
+    void getUnassignedTrainers_shouldReturnMappedShortResponses() {
+        User trainerUser = new User();
+        trainerUser.setUsername("jane.smith");
+        trainerUser.setFirstName("Jane");
+        trainerUser.setLastName("Smith");
+        trainerUser.setActive(true);
 
-        when(userService.createUser("John", "Doe")).thenReturn(user);
-        when(traineeMapper.toEntity(request)).thenReturn(trainee);
+        TrainingType trainingType = new TrainingType();
+        trainingType.setTrainingTypeName(TrainingType.TrainingTypeName.CARDIO);
+
+        Trainer trainer = new Trainer();
+        trainer.setId(10L);
+        trainer.setUser(trainerUser);
+        trainer.setTrainingType(trainingType);
+
+        trainee.setTrainers(List.of());
+
+        when(traineeRepository.findByUserUsername("john.doe"))
+                .thenReturn(Optional.of(trainee));
+        when(trainerRepository.findAll()).thenReturn(List.of(trainer));
+
+        List<TrainerShortResponse> result = traineeService.getUnassignedTrainers("john.doe");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).username()).isEqualTo("jane.smith");
+        assertThat(result.get(0).specialization()).isEqualTo(TrainingType.TrainingTypeName.CARDIO);
+        verify(trainerMapper).toShortResponse(trainer);
+    }
+
+    @Test
+    void getUnassignedTrainers_shouldExcludeAlreadyAssigned() {
+        User trainerUser = new User();
+        trainerUser.setUsername("jane.smith");
+        trainerUser.setActive(true);
+
+        Trainer trainer = new Trainer();
+        trainer.setId(10L);
+        trainer.setUser(trainerUser);
+
+        trainee.setTrainers(List.of(trainer));
+
+        when(traineeRepository.findByUserUsername("john.doe"))
+                .thenReturn(Optional.of(trainee));
+        when(trainerRepository.findAll()).thenReturn(List.of(trainer));
+
+        List<TrainerShortResponse> result = traineeService.getUnassignedTrainers("john.doe");
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getUnassignedTrainers_shouldExcludeInactiveTrainers() {
+        User trainerUser = new User();
+        trainerUser.setUsername("jane.smith");
+        trainerUser.setActive(false);
+
+        Trainer trainer = new Trainer();
+        trainer.setId(10L);
+        trainer.setUser(trainerUser);
+
+        trainee.setTrainers(List.of());
+
+        when(traineeRepository.findByUserUsername("john.doe"))
+                .thenReturn(Optional.of(trainee));
+        when(trainerRepository.findAll()).thenReturn(List.of(trainer));
+
+        List<TrainerShortResponse> result = traineeService.getUnassignedTrainers("john.doe");
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void updateTrainers_shouldReturnMappedResponse() {
+        UpdateTraineeTrainersRequest request = new UpdateTraineeTrainersRequest(
+                "john.doe", List.of("jane.smith"));
+
+        User trainerUser = new User();
+        trainerUser.setUsername("jane.smith");
+        trainerUser.setFirstName("Jane");
+        trainerUser.setLastName("Smith");
+
+        Trainer trainer = new Trainer();
+        trainer.setUser(trainerUser);
+
+        when(traineeRepository.findByUserUsername("john.doe"))
+                .thenReturn(Optional.of(trainee));
+        when(trainerRepository.findAllByUserUsernameIn(List.of("jane.smith")))
+                .thenReturn(List.of(trainer));
         when(traineeRepository.save(any())).thenReturn(trainee);
 
-        RegistrationResponse result = traineeService.create(request);
+        TraineeResponse result = traineeService.updateTrainers("john.doe", request);
+
         assertThat(result.username()).isEqualTo("john.doe");
-        assertThat(result.password()).isEqualTo("pass123");
-        verify(userService).createUser("John", "Doe");
-        verify(traineeMapper).toEntity(request);
-        verify(traineeRepository).save(trainee);
-
-        verify(trainingMetrics).incrementTraineeRegistration();
-    }
-
-    @Test
-    void matchUsernameAndPassword_shouldReturnTrue_whenExists() {
-        when(traineeRepository.existsByUserUsernameAndUserPassword("john.doe", "pass123"))
-                .thenReturn(true);
-
-        boolean result = traineeService.matchUsernameAndPassword("john.doe", "pass123");
-
-        assertThat(result).isTrue();
-    }
-
-    @Test
-    void matchUsernameAndPassword_shouldReturnFalse_whenNotExists() {
-        when(traineeRepository.existsByUserUsernameAndUserPassword("john.doe", "wrong"))
-                .thenReturn(false);
-
-        boolean result = traineeService.matchUsernameAndPassword("john.doe", "wrong");
-
-        assertThat(result).isFalse();
-    }
-
-    @Test
-    void changePassword_shouldUpdatePassword() {
-        ChangePasswordRequest request = new ChangePasswordRequest(
-                "john.doe", "pass123", "newpass");
-
-        when(traineeRepository.findByUserUsername("john.doe"))
-                .thenReturn(Optional.of(trainee));
-        when(traineeRepository.save(any())).thenReturn(trainee);
-
-        traineeService.changePassword(request);
-
-        assertThat(trainee.getUser().getPassword()).isEqualTo("newpass");
-        verify(traineeRepository).save(trainee);
-    }
-
-    @Test
-    void setActive_shouldUpdateActiveStatus() {
-        when(traineeRepository.findByUserUsername("john.doe"))
-                .thenReturn(Optional.of(trainee));
-        when(traineeRepository.save(any())).thenReturn(trainee);
-
-        traineeService.setActive("john.doe", "pass123", false);
-
-        assertThat(trainee.getUser().isActive()).isFalse();
-        verify(traineeRepository).save(trainee);
-    }
-
-    @Test
-    void delete_shouldDeleteTrainee() {
-        when(traineeRepository.findByUserUsername("john.doe"))
-                .thenReturn(Optional.of(trainee));
-
-        traineeService.delete("john.doe", "pass123");
-
-        verify(traineeRepository).delete(trainee);
+        verify(traineeMapper).toResponse(trainee);
     }
 }

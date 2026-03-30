@@ -12,27 +12,23 @@ public interface TraineeService {
 
     RegistrationResponse create(TraineeDtoRequest request);
 
-    boolean matchUsernameAndPassword(String username, String password);
-
-    Optional<TraineeResponse> findByUsername(String username, String password);
+    Optional<TraineeResponse> findByUsername(String username);
 
     void changePassword(ChangePasswordRequest request);
 
-    TraineeResponse update(String username, String password, UpdateTraineeRequest request);
+    TraineeResponse update(String username, UpdateTraineeRequest request);
 
-    void setActive(String username, String password, boolean active);
+    void setActive(String username, boolean active);
 
-    void delete(String username, String password);
+    void delete(String username);
 
     List<TrainingResponse> getTrainings(String username,
-                                        String password,
                                         Date fromDate,
                                         Date toDate,
                                         String trainerName,
                                         TrainingType.TrainingTypeName trainingTypeName);
 
-    List<TrainerShortResponse> getUnassignedTrainers(String username, String password);
+    List<TrainerShortResponse> getUnassignedTrainers(String username);
 
-    TraineeResponse updateTrainers(String username, String password,
-                                   UpdateTraineeTrainersRequest request);
+    TraineeResponse updateTrainers(String username, UpdateTraineeTrainersRequest request);
 }

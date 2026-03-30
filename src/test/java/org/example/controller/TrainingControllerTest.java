@@ -4,13 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.dto.request.TrainingDtoRequest;
 import org.example.dto.response.TrainingTypeResponse;
 import org.example.entity.TrainingType;
-import org.example.mapper.TrainingTypeMapper;
-import org.example.repository.TrainingTypeRepository;
+import org.example.security.service.JwtTokenService;
 import org.example.service.TrainingService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -24,6 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(TrainingController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class TrainingControllerTest {
 
     @Autowired
@@ -36,19 +38,18 @@ class TrainingControllerTest {
     private TrainingService trainingService;
 
     @MockitoBean
-    private TrainingTypeRepository trainingTypeRepository;
+    private JwtTokenService jwtTokenService;
 
     @MockitoBean
-    private TrainingTypeMapper trainingTypeMapper;
+    private UserDetailsService userDetailsService;
 
     @Test
     void addTraining_shouldReturn200() throws Exception {
         TrainingDtoRequest request = new TrainingDtoRequest(
-                "john.doe", "jane.smith", "Morning Run", TrainingType.TrainingTypeName.CARDIO ,new Date(), 60);
+                "john.doe", "jane.smith", "Morning Run",
+                TrainingType.TrainingTypeName.CARDIO, new Date(), 60);
 
         mockMvc.perform(post("/api/trainings")
-                        .header("username", "john.doe")
-                        .header("password", "pass123")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
@@ -62,8 +63,6 @@ class TrainingControllerTest {
                 null, null, null, null, new Date(), 0);
 
         mockMvc.perform(post("/api/trainings")
-                        .header("username", "john.doe")
-                        .header("password", "pass123")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
