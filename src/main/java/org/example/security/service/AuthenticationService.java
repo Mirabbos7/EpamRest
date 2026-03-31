@@ -24,6 +24,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class AuthenticationService {
 
+    // TODO:
+    //  Redundant declarations, unused imports here and in other classes.
+    //  Please use 'Inspect Code' to keep codebase clean
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final JwtTokenService jwtTokenService;

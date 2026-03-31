@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+// TODO:
+//  UserService already exists, please rename this to avoid confusion. I.E. UserDetailsLoader
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
 

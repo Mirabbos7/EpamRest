@@ -11,6 +11,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+// TODO:
+//  1. @RestController includes @Controller
+//  2. @RestController includes @ResponseBody, and with Jackson autoconfigured, it will serve JSON
+//  3. Why did RESTful approach disappear?
 @Controller
 @RestController
 @RequestMapping(produces = "application/json")
@@ -29,6 +33,9 @@ public class AuthenticationController {
         return ResponseEntity.ok("Signed out successfully");
     }
 
+    // TODO:
+    //  Server answer for invalid credentials is 500 and without any readable details.
+    /// {"message":"Internal server error","status":500,"timestamp":"2026-03-31T12:11:20.91905"}
     @PostMapping("/signIn")
     public JwtAuthenticationResponse signIn(@RequestBody @Valid SignInRequest request){
         return authenticationService.signIn(request);

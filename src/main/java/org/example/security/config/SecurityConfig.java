@@ -36,6 +36,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .authorizeHttpRequests(auth -> auth
+                        // TODO:
+                        //  1. I can open swagger page but cannot access swagger content.
+                        //  2. Actuator endpoints are blocked without authentication - was it intentional?
                         .requestMatchers("/swagger-ui/**").permitAll()
                         .requestMatchers("/signIn", "/signUp").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/trainers/register").permitAll()
@@ -48,6 +51,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+                // TODO:
+                //  There are currently 2 logout endpoints "/api/auth/logout" and "/signOut"
+                //  Does it mean that to perform a logout from your service client should call 2 endpoints?
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
                         .logoutSuccessHandler((request, response, auth) ->

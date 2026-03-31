@@ -30,6 +30,8 @@ public class JwtTokenService {
 
     private final Set<String> blacklistedTokens = ConcurrentHashMap.newKeySet();
 
+    // TODO:
+    //  Please double check which methods should not be exposed as public
     public void invalidateToken(String token) {
         blacklistedTokens.add(token);
         log.info("Token invalidated and added to blacklist");

@@ -4,6 +4,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.function.BiFunction;
 
+
+// TODO:
+//  With AuthenticationManager Bean in context, do you need this class?
 @Service
 public class AuthService {
     public void authenticate(String username, String password,
