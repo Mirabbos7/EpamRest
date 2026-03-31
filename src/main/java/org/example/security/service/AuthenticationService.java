@@ -3,19 +3,16 @@ package org.example.security.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.dto.request.SignInRequest;
-import org.example.dto.request.SignUpRequest;
 import org.example.dto.response.JwtAuthenticationResponse;
 import org.example.entity.User;
 import org.example.enums.Role;
 import org.example.exception.AccountLockedException;
 import org.example.repository.UserRepository;
-import org.example.utils.UsernameGenerator;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,18 +21,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class AuthenticationService {
 
-    // TODO:
-    //  Redundant declarations, unused imports here and in other classes.
-    //  Please use 'Inspect Code' to keep codebase clean
-    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final JwtTokenService jwtTokenService;
     private final AuthenticationManager authenticationManager;
     private final LoginAttemptsService loginAttemptsService;
-    private final UsernameGenerator usernameGenerator;
 
     public JwtAuthenticationResponse signIn(SignInRequest request) {
-        if(loginAttemptsService.isBlocked(request.username())){
+        if (loginAttemptsService.isBlocked(request.username())) {
             throw new AccountLockedException("Your account is blocked! Try again in 5 minutes");
         }
         try {
@@ -64,9 +56,9 @@ public class AuthenticationService {
     }
 
     @Transactional
-    public void promoteToAdmin(Long id){
+    public void promoteToAdmin(Long id) {
         var user = userRepository.findById(id)
-                .orElseThrow(()-> new UsernameNotFoundException("User with such id not found!"));
+                .orElseThrow(() -> new UsernameNotFoundException("User with such id not found!"));
         user.setRole(Role.ROLE_ADMIN);
         userRepository.save(user);
     }

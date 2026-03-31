@@ -9,9 +9,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-// TODO:
-//  UserService already exists, please rename this to avoid confusion. I.E. UserDetailsLoader
-public class UserService implements UserDetailsService {
+public class UserDetailsLoader implements UserDetailsService {
     private final UserRepository userRepository;
 
     @Override
@@ -19,6 +17,3 @@ public class UserService implements UserDetailsService {
         return userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User does not found"));
     }
 }
-
-
-

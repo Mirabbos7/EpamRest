@@ -9,4 +9,5 @@ public record TrainingResponse(
         int durationMinutes,
         String trainerName,
         String traineeName
-) {}
+) {
+}

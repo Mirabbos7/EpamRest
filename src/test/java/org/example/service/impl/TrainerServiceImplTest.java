@@ -33,21 +33,29 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class TrainerServiceImplTest {
 
-    @Mock private TrainerRepository trainerRepository;
-    @Mock private TrainingRepository trainingRepository;
-    @Mock private TrainingTypeRepository trainingTypeRepository;
-    @Mock private UserService userService;
-    @Mock private TrainerMapper trainerMapper;
-    @Mock private TrainingMapper trainingMapper;
-    @Mock private TrainingMetrics trainingMetrics;
-    @Mock private PasswordEncoder passwordEncoder;
-    @Mock private JwtTokenService jwtTokenService;
+    @Mock
+    private TrainerRepository trainerRepository;
+    @Mock
+    private TrainingRepository trainingRepository;
+    @Mock
+    private TrainingTypeRepository trainingTypeRepository;
+    @Mock
+    private UserService userService;
+    @Mock
+    private TrainerMapper trainerMapper;
+    @Mock
+    private TrainingMapper trainingMapper;
+    @Mock
+    private TrainingMetrics trainingMetrics;
+    @Mock
+    private PasswordEncoder passwordEncoder;
+    @Mock
+    private JwtTokenService jwtTokenService;
 
     @InjectMocks
     private TrainerServiceImpl trainerService;

@@ -30,8 +30,6 @@ public class JwtTokenService {
 
     private final Set<String> blacklistedTokens = ConcurrentHashMap.newKeySet();
 
-    // TODO:
-    //  Please double check which methods should not be exposed as public
     public void invalidateToken(String token) {
         blacklistedTokens.add(token);
         log.info("Token invalidated and added to blacklist");
@@ -50,7 +48,7 @@ public class JwtTokenService {
         return getClaimsFromToken(token, Claims::getSubject);
     }
 
-    public boolean isTokenExpired(String token) {
+    private boolean isTokenExpired(String token) {
         return getExpirationDateFromToken(token).before(new Date());
     }
 
@@ -58,7 +56,7 @@ public class JwtTokenService {
         return getClaimsFromToken(token, Claims::getExpiration);
     }
 
-    public <T> T getClaimsFromToken(String token, Function<Claims, T> claimsResolver) {
+    private <T> T getClaimsFromToken(String token, Function<Claims, T> claimsResolver) {
         return claimsResolver.apply(getAllClaimsFromToken(token));
     }
 

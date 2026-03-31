@@ -11,7 +11,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class Training extends BaseEntity{
+public class Training extends BaseEntity {
 
     @Column(nullable = false)
     private String name;

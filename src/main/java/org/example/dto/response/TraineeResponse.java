@@ -11,4 +11,5 @@ public record TraineeResponse(
         String address,
         boolean isActive,
         List<TrainerShortResponse> trainers
-) {}
+) {
+}

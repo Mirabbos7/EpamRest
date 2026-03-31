@@ -11,7 +11,8 @@ public class LoginAttemptsService {
     private static final int MAX_ATTEMPTS = 3;
     private static final long BLOCK_DURATION_MS = 5 * 60 * 1000L;
 
-    private record AttemptInfo(int count, long blockedAt) {}
+    private record AttemptInfo(int count, long blockedAt) {
+    }
 
     private final Map<String, AttemptInfo> attempts = new ConcurrentHashMap<>();
 
