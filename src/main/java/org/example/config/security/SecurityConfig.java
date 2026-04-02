@@ -1,8 +1,8 @@
-package org.example.security.config;
+package org.example.config.security;
 
 import lombok.RequiredArgsConstructor;
-import org.example.security.filter.JwtAuthenticationFilter;
-import org.example.security.service.UserDetailsLoader;
+import org.example.config.filter.JwtAuthenticationFilter;
+import org.example.config.service.UserDetailsLoader;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/sign-in", "/sign-up").permitAll()
+                        .requestMatchers("api/auth/sign-in", "api/auth/sign-out").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/trainers/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/trainees/register").permitAll()
                         .requestMatchers("/actuator/health").permitAll()

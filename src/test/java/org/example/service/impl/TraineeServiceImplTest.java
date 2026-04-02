@@ -16,7 +16,7 @@ import org.example.metrics.TrainingMetrics;
 import org.example.repository.TraineeRepository;
 import org.example.repository.TrainerRepository;
 import org.example.repository.TrainingRepository;
-import org.example.security.service.JwtTokenService;
+import org.example.config.service.JwtTokenService;
 import org.example.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

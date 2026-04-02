@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.dto.request.TrainingDtoRequest;
 import org.example.dto.response.TrainingTypeResponse;
 import org.example.entity.TrainingType;
-import org.example.security.service.JwtTokenService;
+import org.example.config.service.JwtTokenService;
 import org.example.service.TrainingService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

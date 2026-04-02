@@ -17,7 +17,7 @@ import org.example.metrics.TrainingMetrics;
 import org.example.repository.TrainerRepository;
 import org.example.repository.TrainingRepository;
 import org.example.repository.TrainingTypeRepository;
-import org.example.security.service.JwtTokenService;
+import org.example.config.service.JwtTokenService;
 import org.example.service.TrainerService;
 import org.example.service.UserService;
 import org.example.specification.TrainingSpecification;

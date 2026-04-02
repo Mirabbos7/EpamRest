@@ -5,13 +5,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.dto.request.SignInRequest;
 import org.example.dto.response.JwtAuthenticationResponse;
-import org.example.security.service.AuthenticationService;
+import org.example.config.service.AuthenticationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(produces = "application/json")
+@RequestMapping(value = "/api/auth", produces = "application/json")
 @RequiredArgsConstructor
 @Slf4j
 public class AuthenticationController {

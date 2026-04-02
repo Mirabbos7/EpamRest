@@ -1,4 +1,4 @@
-package org.example.security.service;
+package org.example.config.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
