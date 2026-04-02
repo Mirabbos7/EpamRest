@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -53,7 +54,7 @@ class AuthenticationControllerTest {
 
         when(authenticationService.signIn(any())).thenReturn(response);
 
-        mockMvc.perform(post("/sign-in")
+        mockMvc.perform(post("/api/auth/sign-in")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -66,7 +67,7 @@ class AuthenticationControllerTest {
     void signIn_shouldReturn400_whenBodyInvalid() throws Exception {
         SignInRequest request = new SignInRequest(null, null);
 
-        mockMvc.perform(post("/sign-in")
+        mockMvc.perform(post("/api/auth/sign-in")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -78,7 +79,7 @@ class AuthenticationControllerTest {
     void signOut_shouldReturn200_withMessage() throws Exception {
         doNothing().when(authenticationService).signOut(any());
 
-        mockMvc.perform(post("/sign-out")
+        mockMvc.perform(post("/api/auth/sign-out")
                         .header("Authorization", "Bearer jwt.token"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Signed out successfully"));
@@ -88,7 +89,7 @@ class AuthenticationControllerTest {
 
     @Test
     void signOut_shouldReturn400_whenAuthHeaderMissing() throws Exception {
-        mockMvc.perform(post("/sign-out"))
+        mockMvc.perform(post("/api/auth/sign-out"))
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(authenticationService);
@@ -98,7 +99,7 @@ class AuthenticationControllerTest {
     void promoteToAdmin_shouldReturn200() throws Exception {
         doNothing().when(authenticationService).promoteToAdmin(1L);
 
-        mockMvc.perform(patch("/1/role"))
+        mockMvc.perform(patch("/api/auth/1/role"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("User promoted to admin"));
 
@@ -107,7 +108,7 @@ class AuthenticationControllerTest {
 
     @Test
     void promoteToAdmin_shouldReturn400_whenIdIsNotNumber() throws Exception {
-        mockMvc.perform(patch("/abc/role"))
+        mockMvc.perform(patch("/api/auth/abc/role"))
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(authenticationService);
