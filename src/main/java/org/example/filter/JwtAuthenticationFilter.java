@@ -1,4 +1,4 @@
-package org.example.config.filter;
+package org.example.filter;
 
 
 import jakarta.servlet.FilterChain;
