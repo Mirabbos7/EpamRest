@@ -7,7 +7,7 @@ import java.util.function.Predicate;
 @Component
 public class UsernameGenerator {
 
-    public String generateUsername(String firstName, String lastName, Predicate<String> existsChecker){
+    public String generateUsername(String firstName, String lastName, Predicate<String> existsChecker) {
         String baseUsername = firstName.trim() + "." + lastName.trim();
 
         if (!existsChecker.test(baseUsername)) {
@@ -17,7 +17,7 @@ public class UsernameGenerator {
         int counter = 1;
         String username = baseUsername + counter;
 
-        while(existsChecker.test(username)){
+        while (existsChecker.test(username)) {
             counter++;
             username = baseUsername + counter;
         }

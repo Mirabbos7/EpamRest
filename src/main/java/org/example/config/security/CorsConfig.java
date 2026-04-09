@@ -1,4 +1,11 @@
-package org.example.security.config;
+// TODO:
+//  [Optional]
+//  I would flatten the packages and keep consistent structure:
+//  config goes into /config
+//  service goes into /service
+//  and filter goes into /filter
+//  Inside those you can split by domain if you want, like service/auth or config/security
+package org.example.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

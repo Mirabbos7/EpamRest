@@ -1,7 +1,11 @@
 package org.example.service;
 
-import org.example.dto.request.*;
-import org.example.dto.response.*;
+import org.example.dto.request.ChangePasswordRequest;
+import org.example.dto.request.TrainerDtoRequest;
+import org.example.dto.request.UpdateTrainerRequest;
+import org.example.dto.response.RegistrationResponse;
+import org.example.dto.response.TrainerResponse;
+import org.example.dto.response.TrainingResponse;
 
 import java.util.Date;
 import java.util.List;

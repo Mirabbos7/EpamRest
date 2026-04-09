@@ -1,4 +1,4 @@
-package org.example.security.service;
+package org.example.config.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -48,7 +48,7 @@ public class JwtTokenService {
         return getClaimsFromToken(token, Claims::getSubject);
     }
 
-    public boolean isTokenExpired(String token) {
+    private boolean isTokenExpired(String token) {
         return getExpirationDateFromToken(token).before(new Date());
     }
 
@@ -56,7 +56,7 @@ public class JwtTokenService {
         return getClaimsFromToken(token, Claims::getExpiration);
     }
 
-    public <T> T getClaimsFromToken(String token, Function<Claims, T> claimsResolver) {
+    private <T> T getClaimsFromToken(String token, Function<Claims, T> claimsResolver) {
         return claimsResolver.apply(getAllClaimsFromToken(token));
     }
 

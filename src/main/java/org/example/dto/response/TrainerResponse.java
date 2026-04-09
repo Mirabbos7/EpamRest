@@ -11,4 +11,5 @@ public record TrainerResponse(
         TrainingType.TrainingTypeName specialization,
         boolean isActive,
         List<TraineeShortResponse> trainees
-) {}
+) {
+}

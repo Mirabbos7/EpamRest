@@ -10,7 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @ToString
 @Table(name = "training_type")
-public class TrainingType extends BaseEntity{
+public class TrainingType extends BaseEntity {
 
     @Column(name = "training_type_name", nullable = false)
     @Enumerated(EnumType.STRING)

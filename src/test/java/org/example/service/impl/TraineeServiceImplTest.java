@@ -16,7 +16,7 @@ import org.example.metrics.TrainingMetrics;
 import org.example.repository.TraineeRepository;
 import org.example.repository.TrainerRepository;
 import org.example.repository.TrainingRepository;
-import org.example.security.service.JwtTokenService;
+import org.example.config.service.JwtTokenService;
 import org.example.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,22 +35,33 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class TraineeServiceImplTest {
 
-    @Mock private TraineeRepository traineeRepository;
-    @Mock private TrainerRepository trainerRepository;
-    @Mock private TrainingRepository trainingRepository;
-    @Mock private UserService userService;
-    @Mock private TrainingMetrics trainingMetrics;
-    @Mock private JwtTokenService jwtTokenService;
-    @Mock private PasswordEncoder passwordEncoder;
+    @Mock
+    private TraineeRepository traineeRepository;
+    @Mock
+    private TrainerRepository trainerRepository;
+    @Mock
+    private TrainingRepository trainingRepository;
+    @Mock
+    private UserService userService;
+    @Mock
+    private TrainingMetrics trainingMetrics;
+    @Mock
+    private JwtTokenService jwtTokenService;
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
-    @Spy private TraineeMapperImpl traineeMapper;
-    @Spy private TrainerMapperImpl trainerMapper;
-    @Spy private TrainingMapperImpl trainingMapper;
+    @Spy
+    private TraineeMapperImpl traineeMapper;
+    @Spy
+    private TrainerMapperImpl trainerMapper;
+    @Spy
+    private TrainingMapperImpl trainingMapper;
 
     @InjectMocks
     private TraineeServiceImpl traineeService;
@@ -72,7 +83,7 @@ class TraineeServiceImplTest {
         trainee.setUser(user);
         trainee.setTrainers(List.of());
     }
-    
+
     @Test
     void create_shouldSaveAndReturnRegistrationResponse() {
         TraineeDtoRequest request = new TraineeDtoRequest("John", "Doe", null, null);

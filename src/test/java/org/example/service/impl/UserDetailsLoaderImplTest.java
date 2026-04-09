@@ -19,12 +19,16 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class UserServiceImplTest {
+class UserDetailsLoaderImplTest {
 
-    @Mock private UserRepository userRepository;
-    @Mock private UsernameGenerator usernameGenerator;
-    @Mock private PasswordGenerator passwordGenerator;
-    @Mock private PasswordEncoder passwordEncoder;
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private UsernameGenerator usernameGenerator;
+    @Mock
+    private PasswordGenerator passwordGenerator;
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private UserServiceImpl userService;

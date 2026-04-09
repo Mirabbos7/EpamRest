@@ -7,4 +7,5 @@ public record TrainerShortResponse(
         String firstName,
         String lastName,
         TrainingType.TrainingTypeName specialization
-) {}
+) {
+}

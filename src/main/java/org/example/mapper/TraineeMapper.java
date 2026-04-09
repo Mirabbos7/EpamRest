@@ -16,16 +16,16 @@ public interface TraineeMapper {
     @Mapping(target = "trainings", ignore = true)
     Trainee toEntity(TraineeDtoRequest request);
 
-    @Mapping(target = "username",   source = "user.username")
-    @Mapping(target = "firstName",  source = "user.firstName")
-    @Mapping(target = "lastName",   source = "user.lastName")
-    @Mapping(target = "isActive",   source = "user.active")
-    @Mapping(target = "trainers",   source = "trainers")
+    @Mapping(target = "username", source = "user.username")
+    @Mapping(target = "firstName", source = "user.firstName")
+    @Mapping(target = "lastName", source = "user.lastName")
+    @Mapping(target = "isActive", source = "user.active")
+    @Mapping(target = "trainers", source = "trainers")
     TraineeResponse toResponse(Trainee trainee);
 
-    @Mapping(target = "username",       source = "user.username")
-    @Mapping(target = "firstName",      source = "user.firstName")
-    @Mapping(target = "lastName",       source = "user.lastName")
+    @Mapping(target = "username", source = "user.username")
+    @Mapping(target = "firstName", source = "user.firstName")
+    @Mapping(target = "lastName", source = "user.lastName")
     @Mapping(target = "specialization", source = "trainingType.trainingTypeName")
     TrainerShortResponse trainerToShortResponse(Trainer trainer);
 

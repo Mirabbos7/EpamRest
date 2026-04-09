@@ -5,10 +5,6 @@ import jakarta.persistence.criteria.JoinType;
 import org.example.entity.*;
 import org.springframework.data.jpa.domain.Specification;
 
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.temporal.TemporalAdjusters;
 import java.util.Date;
 import java.util.List;
 

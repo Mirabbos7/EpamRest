@@ -18,4 +18,5 @@ public record UpdateTrainerRequest(
         TrainingType.TrainingTypeName specialization,
         @NotNull
         boolean isActive
-) {}
+) {
+}

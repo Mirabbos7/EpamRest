@@ -4,7 +4,10 @@ import org.example.dto.request.TrainingDtoRequest;
 import org.example.dto.response.TrainingResponse;
 import org.example.entity.*;
 import org.example.mapper.TrainingMapperImpl;
-import org.example.repository.*;
+import org.example.repository.TraineeRepository;
+import org.example.repository.TrainerRepository;
+import org.example.repository.TrainingRepository;
+import org.example.repository.TrainingTypeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,12 +28,17 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class TrainingServiceImplTest {
 
-    @Mock private TrainingRepository trainingRepository;
-    @Mock private TrainerRepository trainerRepository;
-    @Mock private TraineeRepository traineeRepository;
-    @Mock private TrainingTypeRepository trainingTypeRepository;
+    @Mock
+    private TrainingRepository trainingRepository;
+    @Mock
+    private TrainerRepository trainerRepository;
+    @Mock
+    private TraineeRepository traineeRepository;
+    @Mock
+    private TrainingTypeRepository trainingTypeRepository;
 
-    @Spy private TrainingMapperImpl trainingMapper;
+    @Spy
+    private TrainingMapperImpl trainingMapper;
 
     @InjectMocks
     private TrainingServiceImpl trainingService;

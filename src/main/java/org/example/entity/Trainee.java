@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString(exclude = {"user", "trainers", "trainings"})
-public class Trainee extends BaseEntity{
+public class Trainee extends BaseEntity {
 
     private Date dateOfBirth;
     private String address;

@@ -37,6 +37,7 @@ public class TrainingMetrics {
     public void incrementTrainerRegistration() {
         trainerRegistrationCounter.increment();
     }
+
     public void incrementAuthFailure() {
         authFailureCounter.increment();
     }
