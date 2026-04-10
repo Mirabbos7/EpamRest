@@ -1,5 +1,6 @@
 package org.example.service.impl;
 
+import org.example.client.WorkloadNotifier;
 import org.example.dto.request.TrainingDtoRequest;
 import org.example.dto.response.TrainingResponse;
 import org.example.entity.*;
@@ -36,6 +37,9 @@ class TrainingServiceImplTest {
     private TraineeRepository traineeRepository;
     @Mock
     private TrainingTypeRepository trainingTypeRepository;
+
+    @Mock
+    private WorkloadNotifier workloadNotifier;
 
     @Spy
     private TrainingMapperImpl trainingMapper;
@@ -79,6 +83,7 @@ class TrainingServiceImplTest {
         when(trainingTypeRepository.findByTrainingTypeName(TrainingType.TrainingTypeName.CARDIO))
                 .thenReturn(Optional.of(trainingType));
         when(trainingRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+        doNothing().when(workloadNotifier).notifyWorkload(any(), any()); // ← сюда
 
         TrainingResponse result = trainingService.create(request);
 

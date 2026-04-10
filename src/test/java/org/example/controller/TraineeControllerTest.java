@@ -1,6 +1,7 @@
 package org.example.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.example.config.service.JwtTokenService;
 import org.example.dto.request.TraineeDtoRequest;
 import org.example.dto.request.UpdateTraineeRequest;
 import org.example.dto.request.UpdateTraineeTrainersRequest;
@@ -9,7 +10,6 @@ import org.example.dto.response.TraineeResponse;
 import org.example.dto.response.TrainerShortResponse;
 import org.example.dto.response.TrainingResponse;
 import org.example.entity.TrainingType;
-import org.example.config.service.JwtTokenService;
 import org.example.service.TraineeService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

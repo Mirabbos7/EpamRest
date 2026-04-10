@@ -1,6 +1,7 @@
 package org.example.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.example.config.service.JwtTokenService;
 import org.example.dto.request.ChangePasswordRequest;
 import org.example.dto.request.TrainerDtoRequest;
 import org.example.dto.request.UpdateTrainerRequest;
@@ -8,7 +9,6 @@ import org.example.dto.response.RegistrationResponse;
 import org.example.dto.response.TrainerResponse;
 import org.example.dto.response.TrainingResponse;
 import org.example.entity.TrainingType;
-import org.example.config.service.JwtTokenService;
 import org.example.service.TrainerService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
