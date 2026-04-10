@@ -2,6 +2,7 @@ package org.example.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.config.service.JwtTokenService;
 import org.example.dto.request.ChangePasswordRequest;
 import org.example.dto.request.TrainerDtoRequest;
 import org.example.dto.request.UpdateTrainerRequest;
@@ -17,7 +18,6 @@ import org.example.metrics.TrainingMetrics;
 import org.example.repository.TrainerRepository;
 import org.example.repository.TrainingRepository;
 import org.example.repository.TrainingTypeRepository;
-import org.example.config.service.JwtTokenService;
 import org.example.service.TrainerService;
 import org.example.service.UserService;
 import org.example.specification.TrainingSpecification;
