@@ -94,4 +94,10 @@ public class JwtTokenService {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
+
+    public String generateServiceToken() {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", "SERVICE");
+        return generateToken(claims, "main-service");
+    }
 }
