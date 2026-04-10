@@ -2,6 +2,7 @@ package org.example.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.client.WorkloadNotifier;
 import org.example.dto.request.TrainingDtoRequest;
 import org.example.dto.response.TrainingResponse;
 import org.example.dto.response.TrainingTypeResponse;
@@ -9,6 +10,7 @@ import org.example.entity.Trainee;
 import org.example.entity.Trainer;
 import org.example.entity.Training;
 import org.example.entity.TrainingType;
+import org.example.enums.ActionType;
 import org.example.mapper.TrainingMapper;
 import org.example.mapper.TrainingTypeMapper;
 import org.example.repository.TraineeRepository;
@@ -35,6 +37,7 @@ public class TrainingServiceImpl implements TrainingService {
     private final TrainingTypeRepository trainingTypeRepository;
     private final TrainingMapper trainingMapper;
     private final TrainingTypeMapper trainingTypeMapper;
+    private final WorkloadNotifier workloadNotifier;
 
     @Override
     @Transactional
@@ -62,6 +65,8 @@ public class TrainingServiceImpl implements TrainingService {
         trainingRepository.save(training);
         log.info("Created training: name={}, trainee={}, trainer={}",
                 request.trainingName(), request.traineeUsername(), request.trainerUsername());
+
+        workloadNotifier.notifyWorkload(training, ActionType.ADD);
         return trainingMapper.toTraineeTrainingResponse(training);
     }
 
@@ -128,5 +133,15 @@ public class TrainingServiceImpl implements TrainingService {
                 .stream()
                 .map(trainingTypeMapper::toResponse)
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        Training training = trainingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Training not found: " + id));
+        trainingRepository.delete(training);
+        log.info("{} deleted", training);
+        workloadNotifier.notifyWorkload(training, ActionType.DELETE);
     }
 }
