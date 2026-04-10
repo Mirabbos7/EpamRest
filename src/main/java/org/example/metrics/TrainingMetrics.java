@@ -9,8 +9,6 @@ public class TrainingMetrics {
 
     private final Counter traineeRegistrationCounter;
     private final Counter trainerRegistrationCounter;
-    private final Counter trainingCreatedCounter;
-    private final Counter authFailureCounter;
 
     public TrainingMetrics(MeterRegistry registry) {
         this.traineeRegistrationCounter = Counter.builder("app.trainee.registrations")
@@ -21,11 +19,11 @@ public class TrainingMetrics {
                 .description("Total number of trainer registrations")
                 .register(registry);
 
-        this.trainingCreatedCounter = Counter.builder("app.training.created")
+        Counter.builder("app.training.created")
                 .description("Total number of trainings created")
                 .register(registry);
 
-        this.authFailureCounter = Counter.builder("app.auth.failures")
+        Counter.builder("app.auth.failures")
                 .description("Total number of authentication failures")
                 .register(registry);
     }
@@ -36,9 +34,5 @@ public class TrainingMetrics {
 
     public void incrementTrainerRegistration() {
         trainerRegistrationCounter.increment();
-    }
-
-    public void incrementAuthFailure() {
-        authFailureCounter.increment();
     }
 }
