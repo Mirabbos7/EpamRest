@@ -83,10 +83,7 @@ class TrainingServiceImplTest {
         when(trainingTypeRepository.findByTrainingTypeName(TrainingType.TrainingTypeName.CARDIO))
                 .thenReturn(Optional.of(trainingType));
         when(trainingRepository.save(any())).thenAnswer(i -> i.getArgument(0));
-        // TODO:
-        //  Source code is supposed to be in English and comments are the part of it.
-        //  You can find all cyrillic entries by using this regex: [а-яА-ЯёЁ]
-        doNothing().when(workloadNotifier).notifyWorkload(any(), any()); // ← сюда
+        doNothing().when(workloadNotifier).notifyWorkload(any(), any());
 
         TrainingResponse result = trainingService.create(request);
 
@@ -165,12 +162,9 @@ class TrainingServiceImplTest {
     @Test
     void getTrainingsForTraineesNextWeek_shouldReturnOnlyMatchingTrainings() {
         Calendar cal = Calendar.getInstance();
-
-        // завтра — попадает в диапазон
         cal.add(Calendar.DAY_OF_YEAR, 1);
         Date tomorrow = cal.getTime();
 
-        // 10 дней — не попадает в диапазон (больше 7 дней)
         cal.add(Calendar.DAY_OF_YEAR, 9);
         Date tenDaysLater = cal.getTime();
 
