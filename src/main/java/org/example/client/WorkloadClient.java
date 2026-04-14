@@ -7,9 +7,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.service.annotation.HttpExchange;
 import org.springframework.web.service.annotation.PostExchange;
 
-// TODO:
-//  Are you calling microservice directly or via service discovery?
-@HttpExchange("http://localhost:9090/api/workload")
+@HttpExchange("/api/workload")
 public interface WorkloadClient {
 
     @PostExchange
@@ -17,5 +15,4 @@ public interface WorkloadClient {
             @RequestHeader("Authorization") String authHeader,
             @RequestHeader("X-Transaction-id") String transactionId,
             @RequestBody TrainerWorkloadRequest request);
-
 }

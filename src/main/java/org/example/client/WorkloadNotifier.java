@@ -7,6 +7,7 @@ import org.example.config.service.JwtTokenService;
 import org.example.dto.request.TrainerWorkloadRequest;
 import org.example.entity.Training;
 import org.example.enums.ActionType;
+import org.example.mapper.TrainingWorkloadMapper;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
@@ -17,25 +18,16 @@ public class WorkloadNotifier {
 
     private final WorkloadClient workloadClient;
     private final JwtTokenService jwtTokenService;
+    private final TrainingWorkloadMapper workloadMapper;
 
     @CircuitBreaker(name = "workload-service", fallbackMethod = "notifyWorkloadFallback")
     public void notifyWorkload(Training training, ActionType action) {
         String token = "Bearer " + jwtTokenService.generateServiceToken();
         String transactionId = MDC.get("transactionId");
 
-        // TODO:
-        //  Why not mapstruct here?
-        TrainerWorkloadRequest workloadRequest = TrainerWorkloadRequest.builder()
-                .trainerUsername(training.getTrainer().getUser().getUsername())
-                .trainerFirstName(training.getTrainer().getUser().getFirstName())
-                .trainerLastName(training.getTrainer().getUser().getLastName())
-                .isActive(training.getTrainer().getUser().isActive())
-                .trainingDate(training.getDate())
-                .trainingDuration(training.getDurationInMinutes())
-                .actionType(action)
-                .build();
+        TrainerWorkloadRequest trainerWorkloadRequest = workloadMapper.toWorkloadRequest(training, action);
 
-        workloadClient.processWorkload(token, transactionId, workloadRequest);
+        workloadClient.processWorkload(token, transactionId, trainerWorkloadRequest);
         log.info("Notified workload service: action={}, trainer={}",
                 action, training.getTrainer().getUser().getUsername());
 
