@@ -83,6 +83,9 @@ class TrainingServiceImplTest {
         when(trainingTypeRepository.findByTrainingTypeName(TrainingType.TrainingTypeName.CARDIO))
                 .thenReturn(Optional.of(trainingType));
         when(trainingRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+        // TODO:
+        //  Source code is supposed to be in English and comments are the part of it.
+        //  You can find all cyrillic entries by using this regex: [а-яА-ЯёЁ]
         doNothing().when(workloadNotifier).notifyWorkload(any(), any()); // ← сюда
 
         TrainingResponse result = trainingService.create(request);

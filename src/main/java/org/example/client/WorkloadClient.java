@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.service.annotation.HttpExchange;
 import org.springframework.web.service.annotation.PostExchange;
 
+// TODO:
+//  Are you calling microservice directly or via service discovery?
 @HttpExchange("http://localhost:9090/api/workload")
 public interface WorkloadClient {
 

@@ -23,6 +23,8 @@ public class WorkloadNotifier {
         String token = "Bearer " + jwtTokenService.generateServiceToken();
         String transactionId = MDC.get("transactionId");
 
+        // TODO:
+        //  Why not mapstruct here?
         TrainerWorkloadRequest workloadRequest = TrainerWorkloadRequest.builder()
                 .trainerUsername(training.getTrainer().getUser().getUsername())
                 .trainerFirstName(training.getTrainer().getUser().getFirstName())
