@@ -20,7 +20,7 @@ public class HttpClientsConfig {
     @Bean
     public WorkloadClient workloadClient(RestClient.Builder loadBalancedRestClientBuilder) {
         RestClient restClient = loadBalancedRestClientBuilder
-                .baseUrl("http://workload-service")
+                .baseUrl("http://Workload-ms")
                 .build();
 
         return HttpServiceProxyFactory

@@ -20,7 +20,7 @@ public class WorkloadNotifier {
     private final JwtTokenService jwtTokenService;
     private final TrainingWorkloadMapper workloadMapper;
 
-    @CircuitBreaker(name = "workload-service", fallbackMethod = "notifyWorkloadFallback")
+    @CircuitBreaker(name = "Workload-ms", fallbackMethod = "notifyWorkloadFallback")
     public void notifyWorkload(Training training, ActionType action) {
         String token = "Bearer " + jwtTokenService.generateServiceToken();
         String transactionId = MDC.get("transactionId");
