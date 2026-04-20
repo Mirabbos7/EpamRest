@@ -1,14 +1,13 @@
 package org.example.client;
 
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.config.service.JwtTokenService;
 import org.example.dto.request.TrainerWorkloadRequest;
 import org.example.entity.Training;
 import org.example.enums.ActionType;
 import org.example.mapper.TrainingWorkloadMapper;
-import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -16,25 +15,17 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class WorkloadNotifier {
 
-    private final WorkloadClient workloadClient;
-    private final JwtTokenService jwtTokenService;
+    @Value("${activemq.queue.workload}")
+    private String workloadQueue;
+
+    private final JmsTemplate jmsTemplate;
     private final TrainingWorkloadMapper workloadMapper;
 
-    @CircuitBreaker(name = "Workload-ms", fallbackMethod = "notifyWorkloadFallback")
     public void notifyWorkload(Training training, ActionType action) {
-        String token = "Bearer " + jwtTokenService.generateServiceToken();
-        String transactionId = MDC.get("transactionId");
-
         TrainerWorkloadRequest trainerWorkloadRequest = workloadMapper.toWorkloadRequest(training, action);
+        jmsTemplate.convertAndSend(workloadQueue, trainerWorkloadRequest);
 
-        workloadClient.processWorkload(token, transactionId, trainerWorkloadRequest);
-        log.info("Notified workload service: action={}, trainer={}",
-                action, training.getTrainer().getUser().getUsername());
-
-    }
-
-    public void notifyWorkloadFallback(Training training, ActionType action, Exception e) {
-        log.error("Circuit breaker open — workload service unavailable. trainer={}, action={}, error={}",
-                training.getTrainer().getUser().getUsername(), action, e.getMessage());
+        log.info("Sent workload event to queue: queue={}, action={}, trainer={}",
+                workloadQueue, action, training.getTrainer().getUser().getUsername());
     }
 }
