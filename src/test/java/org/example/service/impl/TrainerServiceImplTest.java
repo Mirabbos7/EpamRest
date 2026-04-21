@@ -265,4 +265,26 @@ class TrainerServiceImplTest {
 
         assertThat(result).isEmpty();
     }
+
+    @Test
+    void matchUsernameAndPassword_shouldReturnTrue_whenMatch() {
+        when(trainerRepository.existsByUserUsernameAndUserPassword(USERNAME, "encoded_pass"))
+                .thenReturn(true);
+
+        boolean result = trainerService.matchUsernameAndPassword(USERNAME, "encoded_pass");
+
+        assertThat(result).isTrue();
+        verify(trainerRepository).existsByUserUsernameAndUserPassword(USERNAME, "encoded_pass");
+    }
+
+    @Test
+    void matchUsernameAndPassword_shouldReturnFalse_whenNoMatch() {
+        when(trainerRepository.existsByUserUsernameAndUserPassword(USERNAME, "wrong_pass"))
+                .thenReturn(false);
+
+        boolean result = trainerService.matchUsernameAndPassword(USERNAME, "wrong_pass");
+
+        assertThat(result).isFalse();
+        verify(trainerRepository).existsByUserUsernameAndUserPassword(USERNAME, "wrong_pass");
+    }
 }

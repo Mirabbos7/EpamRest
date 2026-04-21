@@ -3,8 +3,11 @@ package org.example.service.impl;
 import org.example.client.WorkloadNotifier;
 import org.example.dto.request.TrainingDtoRequest;
 import org.example.dto.response.TrainingResponse;
+import org.example.dto.response.TrainingTypeResponse;
 import org.example.entity.*;
+import org.example.enums.ActionType;
 import org.example.mapper.TrainingMapperImpl;
+import org.example.mapper.TrainingTypeMapper;
 import org.example.repository.TraineeRepository;
 import org.example.repository.TrainerRepository;
 import org.example.repository.TrainingRepository;
@@ -23,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -40,6 +44,9 @@ class TrainingServiceImplTest {
 
     @Mock
     private WorkloadNotifier workloadNotifier;
+
+    @Mock
+    private TrainingTypeMapper trainingTypeMapper;
 
     @Spy
     private TrainingMapperImpl trainingMapper;
@@ -222,5 +229,42 @@ class TrainingServiceImplTest {
                 trainingService.getTrainingsForTraineesNextWeek(List.of(1L));
 
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getTrainingTypes_shouldReturnEmptyList_whenNoTypes() {
+        when(trainingTypeRepository.findAll()).thenReturn(List.of());
+
+        List<TrainingTypeResponse> result = trainingService.getTrainingTypes();
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void delete_shouldDeleteAndNotifyWorkload() {
+        Training training = new Training();
+        training.setTrainer(trainer);
+        training.setTrainee(trainee);
+        training.setTrainingType(trainingType);
+
+        when(trainingRepository.findById(1L)).thenReturn(Optional.of(training));
+        doNothing().when(workloadNotifier).notifyWorkload(any(), any());
+
+        trainingService.delete(1L);
+
+        verify(trainingRepository).delete(training);
+        verify(workloadNotifier).notifyWorkload(training, ActionType.DELETE);
+    }
+
+    @Test
+    void delete_shouldThrow_whenTrainingNotFound() {
+        when(trainingRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> trainingService.delete(99L))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Training not found");
+
+        verify(trainingRepository, never()).delete(any(Training.class));
+        verify(workloadNotifier, never()).notifyWorkload(any(), any());
     }
 }
