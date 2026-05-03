@@ -12,8 +12,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.MessagePostProcessor;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -49,6 +52,10 @@ class WorkloadNotifierTest {
         workloadNotifier.notifyWorkload(training, ActionType.ADD);
 
         verify(workloadMapper).toWorkloadRequest(training, ActionType.ADD);
-        verify(jmsTemplate).convertAndSend("workload.queue", request);
+        verify(jmsTemplate).convertAndSend(
+                eq("workload.queue"),
+                eq(request),
+                any(MessagePostProcessor.class)
+        );
     }
 }
