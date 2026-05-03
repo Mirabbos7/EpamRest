@@ -41,8 +41,8 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/actuator/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.POST).hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.PATCH).hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(HttpMethod.DELETE).hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PATCH).hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")
+                        .requestMatchers(HttpMethod.DELETE).hasAnyAuthority("ROLE_ADMIN", "ROLE_USER")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
