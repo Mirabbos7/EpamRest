@@ -7,6 +7,7 @@ import org.example.dto.request.UpdateTrainerRequest;
 import org.example.dto.response.RegistrationResponse;
 import org.example.dto.response.TrainerResponse;
 import org.example.dto.response.TrainingResponse;
+import org.example.dto.response.UserCreateResult;
 import org.example.entity.Trainer;
 import org.example.entity.TrainingType;
 import org.example.entity.User;
@@ -88,7 +89,9 @@ class TrainerServiceImplTest {
         TrainerDtoRequest request = new TrainerDtoRequest(
                 "John", "Doe", TrainingType.TrainingTypeName.CARDIO);
 
-        when(userService.createUser("John", "Doe")).thenReturn(user);
+        UserCreateResult userCreateResult = new UserCreateResult(user, "rawPassword123");
+
+        when(userService.createUser("John", "Doe")).thenReturn(userCreateResult);
         when(trainingTypeRepository.findByTrainingTypeName(TrainingType.TrainingTypeName.CARDIO))
                 .thenReturn(Optional.of(trainingType));
         when(trainerRepository.save(any())).thenReturn(trainer);
@@ -97,6 +100,7 @@ class TrainerServiceImplTest {
         RegistrationResponse response = trainerService.create(request);
 
         assertThat(response.username()).isEqualTo(USERNAME);
+        assertThat(response.password()).isEqualTo("rawPassword123");
         assertThat(response.token()).isEqualTo("jwt.token");
 
         verify(userService).createUser("John", "Doe");
@@ -111,7 +115,9 @@ class TrainerServiceImplTest {
         TrainerDtoRequest request = new TrainerDtoRequest(
                 "John", "Doe", TrainingType.TrainingTypeName.CARDIO);
 
-        when(userService.createUser(any(), any())).thenReturn(user);
+        UserCreateResult userCreateResult = new UserCreateResult(user, "rawPassword123");
+
+        when(userService.createUser(any(), any())).thenReturn(userCreateResult);
         when(trainingTypeRepository.findByTrainingTypeName(any())).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> trainerService.create(request))

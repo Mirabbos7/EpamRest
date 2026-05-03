@@ -1,5 +1,6 @@
 package org.example.service.impl;
 
+import org.example.dto.response.UserCreateResult;
 import org.example.entity.User;
 import org.example.enums.Role;
 import org.example.repository.UserRepository;
@@ -41,14 +42,15 @@ class UserDetailsLoaderImplTest {
         when(passwordEncoder.encode("abc123XYZ")).thenReturn("encoded_abc123XYZ");
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
-        User result = userService.createUser("John", "Doe");
+        UserCreateResult result = userService.createUser("John", "Doe");
 
-        assertThat(result.getUsername()).isEqualTo("John.Doe");
-        assertThat(result.getPassword()).isEqualTo("encoded_abc123XYZ");
-        assertThat(result.getFirstName()).isEqualTo("John");
-        assertThat(result.getLastName()).isEqualTo("Doe");
-        assertThat(result.isActive()).isTrue();
-        assertThat(result.getRole()).isEqualTo(Role.ROLE_USER);
+        assertThat(result.user().getUsername()).isEqualTo("John.Doe");
+        assertThat(result.user().getPassword()).isEqualTo("encoded_abc123XYZ");
+        assertThat(result.user().getFirstName()).isEqualTo("John");
+        assertThat(result.user().getLastName()).isEqualTo("Doe");
+        assertThat(result.user().isActive()).isTrue();
+        assertThat(result.user().getRole()).isEqualTo(Role.ROLE_USER);
+        assertThat(result.rawPassword()).isEqualTo("abc123XYZ");
         verify(userRepository).save(any(User.class));
     }
 
@@ -73,9 +75,9 @@ class UserDetailsLoaderImplTest {
         when(passwordEncoder.encode("pass999")).thenReturn("encoded_pass999");
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
-        User result = userService.createUser("Jane", "Smith");
+        UserCreateResult result = userService.createUser("Jane", "Smith");
 
-        assertThat(result.isActive()).isTrue();
+        assertThat(result.user().isActive()).isTrue();
     }
 
     @Test
@@ -112,8 +114,8 @@ class UserDetailsLoaderImplTest {
         when(passwordEncoder.encode("pass")).thenReturn("encoded_pass");
         when(userRepository.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
 
-        User result = userService.createUser("John", "Doe");
+        UserCreateResult result = userService.createUser("John", "Doe");
 
-        assertThat(result.getUsername()).isEqualTo("John.Doe1");
+        assertThat(result.user().getUsername()).isEqualTo("John.Doe1");
     }
 }

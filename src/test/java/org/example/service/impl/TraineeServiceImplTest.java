@@ -5,10 +5,7 @@ import org.example.dto.request.ChangePasswordRequest;
 import org.example.dto.request.TraineeDtoRequest;
 import org.example.dto.request.UpdateTraineeRequest;
 import org.example.dto.request.UpdateTraineeTrainersRequest;
-import org.example.dto.response.RegistrationResponse;
-import org.example.dto.response.TraineeResponse;
-import org.example.dto.response.TrainerShortResponse;
-import org.example.dto.response.TrainingResponse;
+import org.example.dto.response.*;
 import org.example.entity.*;
 import org.example.mapper.TraineeMapperImpl;
 import org.example.mapper.TrainerMapperImpl;
@@ -88,7 +85,9 @@ class TraineeServiceImplTest {
     void create_shouldSaveAndReturnRegistrationResponse() {
         TraineeDtoRequest request = new TraineeDtoRequest("John", "Doe", null, null);
 
-        when(userService.createUser("John", "Doe")).thenReturn(user);
+        UserCreateResult userCreateResult = new UserCreateResult(user, "rawPassword123");
+
+        when(userService.createUser("John", "Doe")).thenReturn(userCreateResult);
         when(traineeMapper.toEntity(request)).thenReturn(trainee);
         when(traineeRepository.save(any())).thenReturn(trainee);
         when(jwtTokenService.generateToken(user)).thenReturn("jwt.token");
@@ -96,6 +95,7 @@ class TraineeServiceImplTest {
         RegistrationResponse result = traineeService.create(request);
 
         assertThat(result.username()).isEqualTo("john.doe");
+        assertThat(result.password()).isEqualTo("rawPassword123");
         assertThat(result.token()).isEqualTo("jwt.token");
         verify(userService).createUser("John", "Doe");
         verify(traineeMapper).toEntity(request);
