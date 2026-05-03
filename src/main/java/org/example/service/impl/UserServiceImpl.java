@@ -2,6 +2,7 @@ package org.example.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.dto.response.UserCreateResult;
 import org.example.entity.User;
 import org.example.enums.Role;
 import org.example.repository.UserRepository;
@@ -24,7 +25,7 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public User createUser(String firstName, String lastName) {
+    public UserCreateResult createUser(String firstName, String lastName) {
         String username = usernameGenerator.generateUsername(
                 firstName, lastName,
                 u -> userRepository.findByUsername(u).isPresent()
@@ -38,8 +39,8 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(password));
         user.setRole(Role.ROLE_USER);
         user.setActive(true);
-
+        userRepository.save(user);
         log.info("Creating user with username: {}", username);
-        return userRepository.save(user);
+        return new UserCreateResult(user, password);
     }
 }
