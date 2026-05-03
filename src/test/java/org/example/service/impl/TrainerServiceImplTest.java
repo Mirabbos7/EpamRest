@@ -248,7 +248,7 @@ class TrainerServiceImplTest {
     @Test
     void getTrainings_shouldReturnMappedList() {
         TrainingResponse trainingResponse = new TrainingResponse(
-                "Morning Run", new Date(), "CARDIO", 60, null, "jane.doe");
+                null, "Morning Run", new Date(), "CARDIO", 60, null, "jane.doe");
 
         when(trainingRepository.findAll(any(Specification.class)))
                 .thenReturn(List.of(new org.example.entity.Training()));

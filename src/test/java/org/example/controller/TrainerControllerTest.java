@@ -177,7 +177,7 @@ class TrainerControllerTest {
     @Test
     void getTrainings_shouldReturn200_withList() throws Exception {
         TrainingResponse training = new TrainingResponse(
-                "Morning Run", new Date(), "CARDIO", 60, null, "jane.doe");
+                null, "Morning Run", new Date(), "CARDIO", 60, null, "jane.doe");
 
         when(trainerService.getTrainings(eq(USERNAME), isNull(), isNull(), isNull()))
                 .thenReturn(List.of(training));
