@@ -54,6 +54,12 @@ public class TrainingServiceImpl implements TrainingService {
                 .findByTrainingTypeName(request.typeName())
                 .orElseThrow(() -> new RuntimeException("TrainingType not found: " + request.typeName()));
 
+        if (!trainer.getTrainingType().getTrainingTypeName().equals(type.getTrainingTypeName())) {
+            throw new IllegalArgumentException(
+                    "Training type " + request.typeName() + " does not match trainer specialization "
+                            + trainer.getTrainingType().getTrainingTypeName());
+        }
+
         Training training = new Training();
         training.setTrainer(trainer);
         training.setTrainee(trainee);

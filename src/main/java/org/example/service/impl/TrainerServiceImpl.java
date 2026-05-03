@@ -9,6 +9,7 @@ import org.example.dto.request.UpdateTrainerRequest;
 import org.example.dto.response.RegistrationResponse;
 import org.example.dto.response.TrainerResponse;
 import org.example.dto.response.TrainingResponse;
+import org.example.dto.response.UserCreateResult;
 import org.example.entity.Trainer;
 import org.example.entity.TrainingType;
 import org.example.entity.User;
@@ -48,7 +49,9 @@ public class TrainerServiceImpl implements TrainerService {
     @Override
     @Transactional
     public RegistrationResponse create(TrainerDtoRequest request) {
-        User user = userService.createUser(request.firstName(), request.lastName());
+        UserCreateResult result = userService.createUser(request.firstName(), request.lastName());
+        User user = result.user();
+        String rawPassword = result.rawPassword();
 
         TrainingType trainingType = trainingTypeRepository
                 .findByTrainingTypeName(request.specialization())
@@ -66,7 +69,7 @@ public class TrainerServiceImpl implements TrainerService {
 
         String token = jwtTokenService.generateToken(user);
         log.info("Registered trainer: username={}", user.getUsername());
-        return new RegistrationResponse(user.getUsername(), user.getPassword(), token);
+        return new RegistrationResponse(user.getUsername(), rawPassword, token);
     }
 
     @Override

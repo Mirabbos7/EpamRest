@@ -7,10 +7,7 @@ import org.example.dto.request.ChangePasswordRequest;
 import org.example.dto.request.TraineeDtoRequest;
 import org.example.dto.request.UpdateTraineeRequest;
 import org.example.dto.request.UpdateTraineeTrainersRequest;
-import org.example.dto.response.RegistrationResponse;
-import org.example.dto.response.TraineeResponse;
-import org.example.dto.response.TrainerShortResponse;
-import org.example.dto.response.TrainingResponse;
+import org.example.dto.response.*;
 import org.example.entity.Trainee;
 import org.example.entity.Trainer;
 import org.example.entity.TrainingType;
@@ -52,7 +49,9 @@ public class TraineeServiceImpl implements TraineeService {
     @Override
     @Transactional
     public RegistrationResponse create(TraineeDtoRequest request) {
-        User user = userService.createUser(request.firstName(), request.lastName());
+        UserCreateResult result = userService.createUser(request.firstName(), request.lastName());
+        User user = result.user();
+        String rawPassword = result.rawPassword();
 
         Trainee trainee = traineeMapper.toEntity(request);
         trainee.setUser(user);
@@ -62,7 +61,7 @@ public class TraineeServiceImpl implements TraineeService {
 
         String token = jwtTokenService.generateToken(user);
         log.info("Registered trainee: username={}", user.getUsername());
-        return new RegistrationResponse(user.getUsername(), user.getPassword(), token);
+        return new RegistrationResponse(user.getUsername(), rawPassword, token);
     }
 
     @Override
