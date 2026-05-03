@@ -8,6 +8,7 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface TrainingMapper {
 
+    @Mapping(target = "id", source = "id")
     @Mapping(target = "trainingName", source = "name")
     @Mapping(target = "trainingDate", source = "date")
     @Mapping(target = "trainingType", source = "trainingType.trainingTypeName")
@@ -16,6 +17,7 @@ public interface TrainingMapper {
     @Mapping(target = "traineeName", ignore = true)
     TrainingResponse toTraineeTrainingResponse(Training training);
 
+    @Mapping(target = "id", source = "id")
     @Mapping(target = "trainingName", source = "name")
     @Mapping(target = "trainingDate", source = "date")
     @Mapping(target = "trainingType", source = "trainingType.trainingTypeName")
