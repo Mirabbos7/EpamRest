@@ -3,6 +3,7 @@ package org.example.dto.response;
 import java.util.Date;
 
 public record TrainingResponse(
+        Long id,
         String trainingName,
         Date trainingDate,
         String trainingType,
