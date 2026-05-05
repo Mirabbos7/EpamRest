@@ -1,19 +1,25 @@
 package org.example.dto.request;
 
-import jakarta.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Size;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public record TraineeDtoRequest(
 
-        @NotNull
+        @NotBlank
         String firstName,
 
-        @NotNull
+        @NotBlank
         String lastName,
 
-        Date dateOfBirth,
+        @Past
+        @JsonFormat(pattern = "yyyy-MM-dd")
+        LocalDate dateOfBirth,
 
+        @Size(max = 256)
         String address
 
 ) {

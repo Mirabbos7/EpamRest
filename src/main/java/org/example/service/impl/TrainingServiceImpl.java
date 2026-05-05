@@ -21,6 +21,7 @@ import org.example.service.TrainingService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -65,7 +66,9 @@ public class TrainingServiceImpl implements TrainingService {
         training.setTrainee(trainee);
         training.setTrainingType(type);
         training.setName(request.trainingName());
-        training.setDate(request.trainingDate());
+        training.setDate(Date.from(request.trainingDate()
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant()));
         training.setDurationInMinutes(request.durationMinutes());
 
         trainingRepository.save(training);
