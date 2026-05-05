@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -50,7 +51,7 @@ class TrainingControllerTest {
     void addTraining_shouldReturn200() throws Exception {
         TrainingDtoRequest request = new TrainingDtoRequest(
                 "john.doe", "jane.smith", "Morning Run",
-                TrainingType.TrainingTypeName.CARDIO, new Date(), 60);
+                TrainingType.TrainingTypeName.CARDIO, LocalDate.of(2025, 1, 1), 60);
 
         mockMvc.perform(post("/api/trainings")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -63,7 +64,7 @@ class TrainingControllerTest {
     @Test
     void addTraining_shouldReturn400_whenBodyInvalid() throws Exception {
         TrainingDtoRequest request = new TrainingDtoRequest(
-                null, null, null, null, new Date(), 0);
+                null, null, null, null, LocalDate.of(2025, 1, 1), 0);
 
         mockMvc.perform(post("/api/trainings")
                         .contentType(MediaType.APPLICATION_JSON)

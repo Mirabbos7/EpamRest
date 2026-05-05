@@ -20,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -81,8 +82,7 @@ class TrainingServiceImplTest {
     void create_shouldSaveAndReturnMappedResponse() {
         TrainingDtoRequest request = new TrainingDtoRequest(
                 "john.doe", "jane.smith", "Morning Run",
-                TrainingType.TrainingTypeName.CARDIO, new Date(), 60);
-
+                TrainingType.TrainingTypeName.CARDIO, LocalDate.of(2025, 1, 1), 60);
         when(trainerRepository.findByUserUsername("jane.smith"))
                 .thenReturn(Optional.of(trainer));
         when(traineeRepository.findByUserUsername("john.doe"))
