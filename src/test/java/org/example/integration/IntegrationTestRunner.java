@@ -11,7 +11,7 @@ import org.junit.platform.suite.api.*;
                 value = "org.example.integration"),
         @ConfigurationParameter(key = Constants.PLUGIN_PROPERTY_NAME,
                 value = "pretty, html:target/cucumber-reports/integration/report.html, json:target/cucumber-reports/integration/report.json"),
-        @ConfigurationParameter(key = Constants.FILTER_TAGS_PROPERTY_NAME, value = "not @ignore")
+        @ConfigurationParameter(key = Constants.FILTER_TAGS_PROPERTY_NAME, value = "@integration")
 })
 public class IntegrationTestRunner {
 }
