@@ -10,6 +10,25 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      activemq:
+        image: apache/activemq-classic:latest
+        ports:
+          - 61616:61616
+
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -25,6 +44,9 @@ jobs:
 
       - name: Grant execute permission for Gradle Wrapper
         run: chmod +x ./gradlew
+
+      - name: Create test schema
+        run: PGPASSWORD=postgres psql -h localhost -U postgres -c "CREATE SCHEMA IF NOT EXISTS epam_test;"
 
       - name: Build and test
         run: ./gradlew clean check build
